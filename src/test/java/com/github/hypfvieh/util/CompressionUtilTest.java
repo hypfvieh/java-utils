@@ -22,6 +22,8 @@ public class CompressionUtilTest extends AbstractBaseUtilTest {
         String content = FileIoUtil.readFileToString(extractedGzip);
 
         assertContains(content, "compressed by a unit test");
+
+        extractedGzip.delete(); // remove no longer needed file
     }
 
 
