@@ -165,7 +165,6 @@ public final class SystemUtil {
      * @param _prefix prefix of the folder
      * @param _length length of random chars
      * @param _timestamp add timestamp (yyyyMMdd_HHmmss-SSS) to directory name
-     * @param _alphanumeric use characters and numbers for random part
      * @param _deleteOnExit mark directory for deletion on jvm termination
      * @return
      */
