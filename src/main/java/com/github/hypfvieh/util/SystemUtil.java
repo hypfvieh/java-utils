@@ -4,11 +4,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.URL;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,5 +270,35 @@ public final class SystemUtil {
         int exp = (int) (Math.log(_bytes) / Math.log(unit));
         String pre = (_use1000BytesPerMb ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (_use1000BytesPerMb ? "" : "i");
         return String.format("%.1f %sB", _bytes / Math.pow(unit, exp), pre);
+    }
+
+    /**
+     * Read the JARs manifest and try to get the current program version from it.
+     * @return version or null
+     */
+    public static String getApplicationVersionFromJar(Class<?> _class, String _default) {
+        try {
+            Enumeration<URL> resources = _class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+            while (resources.hasMoreElements()) {
+
+                Manifest manifest = new Manifest(resources.nextElement().openStream());
+                Attributes attribs = manifest.getMainAttributes();
+                String ver = attribs.getValue(Attributes.Name.IMPLEMENTATION_VERSION);
+                if (ver == null) {
+                	return _default;
+                }
+
+                String rev = attribs.getValue("Implementation-Revision");
+                if (rev != null) {
+                    ver += "-r" + rev;
+                }
+                return ver;
+
+            }
+        } catch (IOException _ex) {
+        }
+
+        return _default;
+
     }
 }
