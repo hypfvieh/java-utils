@@ -53,10 +53,6 @@ public final class NativeLibraryLoader {
             return;
         }
 
-        if (_trySystemLibsFirst) {
-
-        }
-
         if (_searchPathes != null && _searchPathes.length > 0) {
             INSTANCE.findProperNativeLib(!_trySystemLibsFirst, _libName, Arrays.asList(_searchPathes));
         }
