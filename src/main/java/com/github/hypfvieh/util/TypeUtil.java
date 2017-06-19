@@ -1,5 +1,6 @@
 package com.github.hypfvieh.util;
 
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -34,6 +35,64 @@ public final class TypeUtil {
         return ConverterUtil.strToBool(_str);
     }
 
+    /**
+     * Checks if the given string is a valid double (including negative values).
+     * Separator is based on the used locale.
+     * @param _str string to check
+     * @return true if valid double, false otherwise
+     */
+    public static boolean isDouble(String _str) {
+        return isDouble(_str, true);
+    }
+    
+    /**
+     * Checks if the given string is a valid double (including negative values) using the given separator.
+     * @param _str string to check
+     * @param _separator separator to use
+     * @return true if valid double, false otherwise
+     */
+    public static boolean isDouble(String _str, char _separator) {
+        return isDouble(_str, _separator, true);
+    }
+
+    /**
+     * Checks if the given string is a valid double.
+     * The used separator is based on the used system locale
+     * @param _str string to validate
+     * @param _allowNegative set to true if negative double should be allowed
+     * @return true if given string is double, false otherwise
+     */
+    public static boolean isDouble(String _str, boolean _allowNegative) {        
+        return isDouble(_str, DecimalFormatSymbols.getInstance().getDecimalSeparator(), _allowNegative);
+    }
+
+    /**
+     * Checks if the given string is a valid double.
+     * @param _str string to validate
+     * @param _separator seperator used (e.g. "." (dot) or "," (comma))
+     * @param _allowNegative set to true if negative double should be allowed
+     * @return true if given string is double, false otherwise
+     */
+    public static boolean isDouble(String _str, char _separator, boolean _allowNegative) {
+        String pattern = "\\d+XXX\\d+$";
+        if (_separator == '.') {
+            pattern = pattern.replace("XXX", "\\.?");
+        } else {
+            pattern = pattern.replace("XXX", _separator + "?");
+        }
+        
+        if (_allowNegative) {
+            pattern = "^-?" + pattern;
+        } else {
+            pattern = "^" + pattern;
+        }
+        
+        if (_str != null) {
+            return _str.matches(pattern) || isInteger(_str, _allowNegative);
+        }
+        return false;
+    }
+    
     /**
      * Check if string is integer (including negative integers).
      *
@@ -99,7 +158,7 @@ public final class TypeUtil {
      * @return true if given string is valid regex, false otherwise
      */
     public static boolean isValidRegex(String _regExStr) {
-        return createRegExPatternIfValid(_regExStr) != null ? true : false;
+        return createRegExPatternIfValid(_regExStr) != null;
     }
 
     /**
@@ -127,11 +186,12 @@ public final class TypeUtil {
      * Creates a list from a varargs parameter array.
      * The generic list is created with the same type as the parameters.
      * @param _entries list entries
+     * @param <T> list type
      * @return list
      */
     @SafeVarargs
     public static <T> List<T> createList(T... _entries) {
-        List<T> l = new ArrayList<T>();
+        List<T> l = new ArrayList<>();
         if (_entries != null) {
             l.addAll(Arrays.asList(_entries));
         }
@@ -140,12 +200,13 @@ public final class TypeUtil {
 
     /**
      * Creates a map from the even-sized parameter array.
+     * @param <T> map type
      * @param _args parameter array, any type
      * @return map of parameter type
      */
     @SafeVarargs
     public static <T> Map<T, T> createMap(T... _args) {
-        Map<T, T> map = new HashMap<T, T>();
+        Map<T, T> map = new HashMap<>();
         if (_args != null) {
             if (_args.length % 2 != 0) {
                 throw new IllegalArgumentException("Even number of parameters required to create map: " + Arrays.toString(_args));
@@ -205,6 +266,8 @@ public final class TypeUtil {
     *
     * @param _map
     * @param _nbElements
+    * @param <K> key type
+    * @param <V> value type
     * @return List of Maps
     * @throws IllegalAccessException
     * @throws InstantiationException
@@ -230,10 +293,11 @@ public final class TypeUtil {
     *
     * @param _list
     * @param _elements
+    * @param <T>
     * @return
     */
    public static <T> List<List<T>> splitList(List<T> _list, int _elements) {
-       List<List<T>> partitions = new ArrayList<List<T>>();
+       List<List<T>> partitions = new ArrayList<>();
        for (int i = 0; i < _list.size(); i += _elements) {
            partitions.add(_list.subList(i,
                    Math.min(i + _elements, _list.size())));

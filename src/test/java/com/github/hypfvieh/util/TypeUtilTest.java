@@ -65,6 +65,26 @@ public class TypeUtilTest extends AbstractBaseUtilTest {
     }
 
     @Test
+    public void testIsDouble() {
+        System.out.println("isDouble");
+
+        String int1 = "0";
+        String int2 = "-0.45";
+        String int3 = "4.711";
+        String int4 = "0,815";
+        String int5 = "no double";
+        String int6 = null;
+
+        assertEquals(true, TypeUtil.isDouble(int1, '.'));
+        assertEquals(false, TypeUtil.isDouble(int2, '.', false));
+        assertEquals(true, TypeUtil.isDouble(int2, '.'));
+        assertEquals(true, TypeUtil.isDouble(int3, '.'));
+        assertEquals(false, TypeUtil.isDouble(int4, '.'));
+        assertEquals(false, TypeUtil.isDouble(int5, '.'));
+        assertEquals(false, TypeUtil.isDouble(int6, '.'));
+
+    }
+    @Test
     public void testIsValidNetworkPort() {
         System.out.println("isValidNetworkPort");
 
