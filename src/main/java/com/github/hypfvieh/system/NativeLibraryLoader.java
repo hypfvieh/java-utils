@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.hypfvieh.util.SystemUtil;
+
 /**
  * Helper class to load a native library either from a given path, the classpath or system library path.
  */
@@ -53,73 +55,112 @@ public final class NativeLibraryLoader {
             return;
         }
 
-        if (_searchPathes != null && _searchPathes.length > 0) {
-            INSTANCE.findProperNativeLib(!_trySystemLibsFirst, _libName, Arrays.asList(_searchPathes));
+        List<LoadOrder> loadOrder = new ArrayList<>();
+        
+        if (_trySystemLibsFirst) {
+            loadOrder.add(LoadOrder.SYSTEM_PATH);
         }
+        
+        loadOrder.add(LoadOrder.CUSTOM_PATH);
+        loadOrder.add(LoadOrder.CLASS_PATH);
+        
+        loadLibrary(_libName, loadOrder.toArray(new LoadOrder[] {}), _searchPathes);
     }
 
     /**
-     * Tries to find a proper library for loading.
-     * Search pathes are iterated and search for path/$jvmArch/_libName.
-     * If that fails path/_libName is tried.
-     * If that also fails, classpath is considered (same pattern, first with $jvmArch, then without).
-     *
-     * @param _libName library to load
-     * @param _searchPathes pathes to search
-     *
-     * @throws RuntimeException if library could no be loaded from any given path (including classpath)
+     * Tries to load the given library using the given load/search order.
      */
-    private void findProperNativeLib(boolean _trySystemLibToo, String _libName, List<String> _searchPathes) {
-        String arch = System.getProperty("os.arch");
-        for (String path : _searchPathes) {
-            File file = new File(concatFilePath(false, path, arch, _libName));
-            if (!file.exists()) { // file exists in file system
-                file = new File(concatFilePath(false, path, _libName));
-            }
-
-            if (loadLib(file.getAbsolutePath()) == null) { // library could be loaded, skip further tries
+    public static void loadLibrary(String _libName, LoadOrder[] _loadOrder, String... _searchPathes) {
+        if (!isEnabled()) {
+            return;
+        }
+        
+        for (LoadOrder order : _loadOrder) {
+            if (INSTANCE.findProperNativeLib(order, _libName, _searchPathes) == null) {
                 return;
             }
         }
-
-        // if we reach this point, library was not found in filesystem, so we try classpath
-        Throwable loadLibError = null;
-        for (String path : _searchPathes) {
-
-            String fileNameWithPath = concatFilePath(false, path, arch, _libName);
-            InputStream libAsStream = NativeLibraryLoader.class.getClassLoader().getResourceAsStream(fileNameWithPath);
-            if (libAsStream == null) {
-                fileNameWithPath = concatFilePath(false, path, _libName);
-                libAsStream = NativeLibraryLoader.class.getClassLoader().getResourceAsStream(fileNameWithPath);
+        throw new RuntimeException("Could not load library from any given source: " + Arrays.toString(_loadOrder));
+    }
+    
+    /**
+     * Tries to load a library from the given search path, depending on given {@link LoadOrder} value.
+     * 
+     * @param _order search order option
+     * @param _libName name of the library
+     * @param _searchPathes pathes to search for library
+     * @return {@link Throwable} if loading fails, null if loading was successful
+     */
+    private Throwable findProperNativeLib(LoadOrder _order, String _libName, String[] _searchPathes) {
+        String arch = System.getProperty("os.arch");
+        Throwable lastErr = null;
+        
+        if (_order == LoadOrder.SYSTEM_PATH) { // search in system pathes (e.g. content of LD_LIBRARY_PATH)
+            Throwable loadError = loadSystemLib(_libName);
+            if (loadError == null) {
+                return null;
             }
-            if (libAsStream != null) {
-                String fileExt = getFileExtension(fileNameWithPath);
-                String prefix = fileNameWithPath.replace(new File(fileNameWithPath).getParent(), "").replace("." + fileExt, "");
-
-                try {
-                    // extract the library
-                    File tmpFile = extractToTemp(libAsStream, prefix, fileExt);
-                    // try to load it
-                    loadLibError = loadLib(tmpFile.getAbsolutePath());
-                    if (loadLibError == null) { // load successful
-                        return;
+            
+        } else if (_order == LoadOrder.CLASS_PATH) {
+            for (String path : _searchPathes) {
+                // first, try with OS architecture in path name
+                String fileNameWithPath = SystemUtil.concatFilePath(false, path, arch, _libName);
+                InputStream libAsStream = NativeLibraryLoader.class.getClassLoader().getResourceAsStream(fileNameWithPath);
+                lastErr = loadFromStream(fileNameWithPath, libAsStream);
+                if (lastErr == null) {
+                    return null;
+                } else { // then try without OS architecture in path name
+                    
+                    fileNameWithPath = SystemUtil.concatFilePath(false, path, _libName);
+                    libAsStream = NativeLibraryLoader.class.getClassLoader().getResourceAsStream(fileNameWithPath);
+                    lastErr = loadFromStream(fileNameWithPath, libAsStream);
+                    if (lastErr == null) {
+                        return null;
                     }
-                } catch (IOException _ex) {
-                    // ignore Exception, we may have other options to try
+                }
+            }
+        } else { // search in custom pathes
+            
+            for (String path : _searchPathes) {
+                File file = new File(SystemUtil.concatFilePath(false, path, arch, _libName));
+                if (!file.exists()) { // file not exists in file system, go to next entry
+                    continue;
+                }
+                lastErr = loadLib(file.getAbsolutePath());
+                if (lastErr == null) {
+                    return null;
                 }
             }
         }
-
-        if (_trySystemLibToo) {
-            // last option: try loading from system library path
-            Throwable loadError = loadSystemLib(_libName);
-            if (loadError != null) {
-                throw new RuntimeException(loadError);
-            }
-        }
-
+        
+        return lastErr;
     }
+    
+    /**
+     * Loads a library from the given stream, using the given filename (including path).
+     * 
+     * @param _fileNameWithPath
+     * @param _libAsStream
+     * @return {@link Throwable} if any Exception/Error occurs, null otherwise
+     */
+    private Throwable loadFromStream(String _fileNameWithPath, InputStream _libAsStream) {
+        String fileExt = getFileExtension(_fileNameWithPath);
+        String prefix = _fileNameWithPath.replace(new File(_fileNameWithPath).getParent(), "").replace("." + fileExt, "");
 
+        // extract the library
+        try {
+            File tmpFile = extractToTemp(_libAsStream, prefix, fileExt);
+            Throwable loadLibErr = loadLib(tmpFile.getAbsolutePath());
+            if (loadLibErr != null) {
+                return loadLibErr;
+            }
+        } catch (Exception _ex) {
+            return _ex;
+        }
+        
+        return null;
+    }
+   
     /**
      * Tries to load a library from the given path.
      * Will catches exceptions and return them to the caller.
@@ -211,36 +252,6 @@ public final class NativeLibraryLoader {
     }
 
     /**
-     * Concats a path from all given parts, using the path delimiter for the currently used platform.
-     * @param _includeTrailingDelimiter include delimiter after last token
-     * @param _parts parts to concat
-     * @return concatinated string
-     */
-    public static String concatFilePath(boolean _includeTrailingDelimiter, String..._parts) {
-        if (_parts == null) {
-            return null;
-        }
-        StringBuilder allParts = new StringBuilder();
-
-        for (int i = 0; i < _parts.length; i++) {
-            if (_parts[i] == null) {
-                continue;
-            }
-            allParts.append(_parts[i]);
-
-            if (!_parts[i].endsWith(File.separator)) {
-                allParts.append(File.separator);
-            }
-        }
-
-        if (!_includeTrailingDelimiter && allParts.length() > 0) {
-            return allParts.substring(0, allParts.lastIndexOf(File.separator));
-        }
-
-        return allParts.toString();
-    }
-
-    /**
      * Extracts the file extension (part behind last dot of a filename).
      * Only returns the extension, without the leading dot.
      *
@@ -256,5 +267,18 @@ public final class NativeLibraryLoader {
             return "";
         }
         return _fileName.substring(lastDot + 1);
+    }
+    
+    /**
+     * Defines where to look for a library.
+     *  
+     */
+    static enum LoadOrder {
+        /** Look in any given external path */
+        CUSTOM_PATH,
+        /** Look in classpath, this includes directory and the jar(s) */
+        CLASS_PATH,
+        /** Look in system path (e.g. /usr/lib on linux/unix systems) */
+        SYSTEM_PATH;
     }
 }
