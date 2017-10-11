@@ -19,6 +19,8 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.hypfvieh.common.SearchOrder;
+
 
 public final class FileIoUtil {
 
@@ -156,6 +158,17 @@ public final class FileIoUtil {
      * @return fileContent as List or null if file is empty or an error occurred.
      */
     public static List<String> getTextfileFromUrl(String _url, Charset _charset) {
+       return getTextfileFromUrl(_url, _charset, false);
+    }
+
+    /**
+     * @see #getTextfileFromUrl(String, Charset)
+     * @param _url
+     * @param _charset
+     * @param _silent true to not log exceptions, false otherwise
+     * @return
+     */
+    public static List<String> getTextfileFromUrl(String _url, Charset _charset, boolean _silent) {
         if (_url == null) {
             return null;
         }
@@ -187,7 +200,9 @@ public final class FileIoUtil {
             return fileContent.size() > 0 ? fileContent : null;
 
         } catch (IOException _ex) {
-            LOGGER.warn("Error while retrieving connection List:", _ex);
+        	if (!_silent) {
+        		LOGGER.warn("Error while reading file:", _ex);
+        	}
         }
 
         return null;
@@ -216,11 +231,18 @@ public final class FileIoUtil {
      * @return
      */
     public static List<String> readFileToList(File _file) {
-        List<String> localText = getTextfileFromUrl(_file.getAbsolutePath());
-        if (localText == null) {
-            return null;
-        }
+        return readFileToList(_file.getAbsolutePath());
+    }
 
+    /**
+     * Reads a file to a List&lt;String&gt; (each line is one entry in list).
+     * Line endings (line feed/carriage return) are NOT removed!
+     *
+     * @param _fileName
+     * @return
+     */
+    public static List<String> readFileToList(String _fileName) {
+        List<String> localText = getTextfileFromUrl(_fileName);
         return localText;
     }
 
@@ -313,19 +335,33 @@ public final class FileIoUtil {
     }
 
     /**
-     * Reads a file from classpath to a list of String.
+     * Reads a file from classpath to a list of String using default charset and log any exception.
      *
      * @param _fileName
      * @return file contents or empty list
      */
     public static List<String> readFileFromClassPathAsList(String _fileName) {
+    	List<String> result = readFileFromClassPathAsList(_fileName, Charset.defaultCharset(), false);
+        return result == null ? new ArrayList<String>() : result;
+    }
+
+    /**
+     * Reads a file from classpath to a list of String with the given charset.
+     * Will optionally suppress any exception logging.
+     *
+     * @param _fileName file to read
+     * @param _charset charset to use for reading
+     * @param _silent true to suppress error logging, false otherwise
+     * @return file contents or null on exception
+     */
+    public static List<String> readFileFromClassPathAsList(String _fileName, Charset _charset, boolean _silent) {
         List<String> contents = new ArrayList<>();
         if (StringUtil.isBlank(_fileName)) {
             return contents;
         }
         InputStream inputStream = FileIoUtil.class.getClassLoader().getResourceAsStream(_fileName);
         if (inputStream != null) {
-            try (BufferedReader dis = new BufferedReader(new InputStreamReader(inputStream, Charset.defaultCharset()))) {
+            try (BufferedReader dis = new BufferedReader(new InputStreamReader(inputStream, _charset))) {
                 String s;
 
                 while ((s = dis.readLine()) != null) {
@@ -333,10 +369,17 @@ public final class FileIoUtil {
                 }
                 return contents;
             } catch (IOException _ex) {
-                LOGGER.error("Error while reading resource to string: ", _ex);
-                return contents;
+            	if (!_silent) {
+            		LOGGER.error("Error while reading resource to string: ", _ex);
+            	}
+                return null;
             }
+        } else {
+        	if (_silent) {
+        		return null;
+        	}
         }
+
         return contents;
     }
 
@@ -400,6 +443,56 @@ public final class FileIoUtil {
      */
     public static boolean writeTextFile(String _fileName, String _fileContent, boolean _append) {
         return writeTextFile(_fileName, _fileContent, Charset.defaultCharset(), _append);
+    }
+
+    /**
+     * Read a file from different sources depending on _searchOrder.
+     * Will return the first successfully read file which can be loaded either from custom path, classpath or system path.
+     *
+     * @param _fileName file to read
+     * @param _charset charset used for reading
+     * @param _searchOrder search order
+     * @return List of String with file content or null if file could not be found
+     */
+    public static List<String> readFileFrom(String _fileName, Charset _charset, SearchOrder... _searchOrder) {
+
+    	List<String> result = null;
+    	for (SearchOrder searchOrder : _searchOrder) {
+			switch (searchOrder) {
+				case CLASS_PATH:
+					result = readFileFromClassPathAsList(_fileName, _charset, true);
+					if (result != null) {
+						return result;
+					}
+					break;
+				case SYSTEM_PATH:
+					String pathes = System.getenv("PATH");
+					String os = System.getProperty("os.name");
+					String delimiter = ":";
+					if (os != null && os.equalsIgnoreCase("windows")) {
+						delimiter = ";";
+					}
+					if (pathes != null) {
+						String[] searchPathes = pathes.split(delimiter);
+						for (String path : searchPathes) {
+							File file = new File(path, _fileName);
+							if (file.exists()) {
+								result = getTextfileFromUrl(file.getAbsolutePath(), _charset, true);
+							}
+						}
+					}
+					break;
+				case CUSTOM_PATH:
+				default:
+					result = getTextfileFromUrl(_fileName, _charset, true);
+					if (result != null) {
+						return result;
+					}
+					break;
+
+			}
+		}
+    	return result;
     }
 
 }

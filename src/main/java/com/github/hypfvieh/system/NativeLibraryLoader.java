@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.hypfvieh.common.SearchOrder;
 import com.github.hypfvieh.util.SystemUtil;
 
 /**
@@ -55,27 +56,27 @@ public final class NativeLibraryLoader {
             return;
         }
 
-        List<LoadOrder> loadOrder = new ArrayList<>();
+        List<SearchOrder> loadOrder = new ArrayList<>();
         
         if (_trySystemLibsFirst) {
-            loadOrder.add(LoadOrder.SYSTEM_PATH);
+            loadOrder.add(SearchOrder.SYSTEM_PATH);
         }
         
-        loadOrder.add(LoadOrder.CUSTOM_PATH);
-        loadOrder.add(LoadOrder.CLASS_PATH);
+        loadOrder.add(SearchOrder.CUSTOM_PATH);
+        loadOrder.add(SearchOrder.CLASS_PATH);
         
-        loadLibrary(_libName, loadOrder.toArray(new LoadOrder[] {}), _searchPathes);
+        loadLibrary(_libName, loadOrder.toArray(new SearchOrder[] {}), _searchPathes);
     }
 
     /**
      * Tries to load the given library using the given load/search order.
      */
-    public static void loadLibrary(String _libName, LoadOrder[] _loadOrder, String... _searchPathes) {
+    public static void loadLibrary(String _libName, SearchOrder[] _loadOrder, String... _searchPathes) {
         if (!isEnabled()) {
             return;
         }
         
-        for (LoadOrder order : _loadOrder) {
+        for (SearchOrder order : _loadOrder) {
             if (INSTANCE.findProperNativeLib(order, _libName, _searchPathes) == null) {
                 return;
             }
@@ -84,24 +85,24 @@ public final class NativeLibraryLoader {
     }
     
     /**
-     * Tries to load a library from the given search path, depending on given {@link LoadOrder} value.
+     * Tries to load a library from the given search path, depending on given {@link SearchOrder} value.
      * 
      * @param _order search order option
      * @param _libName name of the library
      * @param _searchPathes pathes to search for library
      * @return {@link Throwable} if loading fails, null if loading was successful
      */
-    private Throwable findProperNativeLib(LoadOrder _order, String _libName, String[] _searchPathes) {
+    private Throwable findProperNativeLib(SearchOrder _order, String _libName, String[] _searchPathes) {
         String arch = System.getProperty("os.arch");
         Throwable lastErr = null;
         
-        if (_order == LoadOrder.SYSTEM_PATH) { // search in system pathes (e.g. content of LD_LIBRARY_PATH)
+        if (_order == SearchOrder.SYSTEM_PATH) { // search in system pathes (e.g. content of LD_LIBRARY_PATH)
             Throwable loadError = loadSystemLib(_libName);
             if (loadError == null) {
                 return null;
             }
             
-        } else if (_order == LoadOrder.CLASS_PATH) {
+        } else if (_order == SearchOrder.CLASS_PATH) {
             for (String path : _searchPathes) {
                 // first, try with OS architecture in path name
                 String fileNameWithPath = SystemUtil.concatFilePath(false, path, arch, _libName);
@@ -267,18 +268,5 @@ public final class NativeLibraryLoader {
             return "";
         }
         return _fileName.substring(lastDot + 1);
-    }
-    
-    /**
-     * Defines where to look for a library.
-     *  
-     */
-    static enum LoadOrder {
-        /** Look in any given external path */
-        CUSTOM_PATH,
-        /** Look in classpath, this includes directory and the jar(s) */
-        CLASS_PATH,
-        /** Look in system path (e.g. /usr/lib on linux/unix systems) */
-        SYSTEM_PATH;
     }
 }

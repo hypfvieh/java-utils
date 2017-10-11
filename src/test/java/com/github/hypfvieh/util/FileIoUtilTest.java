@@ -1,12 +1,14 @@
 package com.github.hypfvieh.util;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Properties;
 
 import org.junit.Test;
 
 import com.github.hypfvieh.AbstractBaseUtilTest;
+import com.github.hypfvieh.common.SearchOrder;
 
 /**
  *
@@ -61,4 +63,11 @@ public class FileIoUtilTest extends AbstractBaseUtilTest {
         assertFalse(textfileFromUrl.size() <= 0);
     }
 
+    @Test
+    public void testReadFileFrom() {
+    	String path = System.getProperty("user.dir") + File.separator + "src/test/resources/FileIoUtilTest/getTextFileTest.txt";
+    	List<String> readFileFrom = FileIoUtil.readFileFrom(path, Charset.defaultCharset(), SearchOrder.SYSTEM_PATH, SearchOrder.CLASS_PATH, SearchOrder.CUSTOM_PATH);
+
+    	assertFalse(readFileFrom.isEmpty());
+    }
 }

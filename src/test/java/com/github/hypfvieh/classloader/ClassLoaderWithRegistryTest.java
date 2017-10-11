@@ -26,9 +26,7 @@ public class ClassLoaderWithRegistryTest extends AbstractBaseUtilTest {
         String testClass = "com.github.hypfvieh.classloader.ClassLoaderWithRegistryTest$LoaderTest";
         ClassLoaderWithRegistry classLoaderWithRegistry = new ClassLoaderWithRegistry(Class.forName(testClass).getClassLoader());
 
-
         classLoaderWithRegistry.addIncludedPackageNames("com.github.hypfvieh.classloader.");
-
 
         Thread.currentThread().setContextClassLoader(classLoaderWithRegistry);
 
