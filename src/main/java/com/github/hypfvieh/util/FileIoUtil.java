@@ -166,7 +166,7 @@ public final class FileIoUtil {
      * @param _url
      * @param _charset
      * @param _silent true to not log exceptions, false otherwise
-     * @return
+     * @return list of string or null on error
      */
     public static List<String> getTextfileFromUrl(String _url, Charset _charset, boolean _silent) {
         if (_url == null) {
@@ -188,8 +188,31 @@ public final class FileIoUtil {
             urlConn.setDoInput(true);
             urlConn.setUseCaches(false);
 
+            return readTextFileFromStream(urlConn.getInputStream(), _charset, _silent);
+
+        } catch (IOException _ex) {
+            if (!_silent) {
+                LOGGER.warn("Error while reading file:", _ex);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Reads a text file from given {@link InputStream} using the given {@link Charset}.
+     * @param _input stream to read
+     * @param _charset charset to use
+     * @param _silent true to disable exception logging, false otherwise
+     * @return List of string or null on error
+     */
+    public static List<String> readTextFileFromStream(InputStream _input, Charset _charset, boolean _silent) {
+        if (_input == null) {
+            return null;
+        }
+        try {
             List<String> fileContent;
-            try (BufferedReader dis = new BufferedReader(new InputStreamReader(urlConn.getInputStream(), _charset))) {
+            try (BufferedReader dis = new BufferedReader(new InputStreamReader(_input, _charset))) {
                 String s;
                 fileContent = new ArrayList<>();
                 while ((s = dis.readLine()) != null) {
@@ -198,11 +221,10 @@ public final class FileIoUtil {
             }
 
             return fileContent.size() > 0 ? fileContent : null;
-
         } catch (IOException _ex) {
-        	if (!_silent) {
-        		LOGGER.warn("Error while reading file:", _ex);
-        	}
+            if (!_silent) {
+                LOGGER.warn("Error while reading file:", _ex);
+            }
         }
 
         return null;
@@ -455,44 +477,65 @@ public final class FileIoUtil {
      * @return List of String with file content or null if file could not be found
      */
     public static List<String> readFileFrom(String _fileName, Charset _charset, SearchOrder... _searchOrder) {
+    	InputStream stream = openInputStreamForFile(_fileName, _searchOrder);
+    	if (stream != null) {
+    		return readTextFileFromStream(stream, _charset, true);
+    	}
+    	return null;
+    }
 
-    	List<String> result = null;
-    	for (SearchOrder searchOrder : _searchOrder) {
-			switch (searchOrder) {
-				case CLASS_PATH:
-					result = readFileFromClassPathAsList(_fileName, _charset, true);
-					if (result != null) {
-						return result;
-					}
-					break;
-				case SYSTEM_PATH:
-					String pathes = System.getenv("PATH");
-					String os = System.getProperty("os.name");
-					String delimiter = ":";
-					if (os != null && os.equalsIgnoreCase("windows")) {
-						delimiter = ";";
-					}
-					if (pathes != null) {
-						String[] searchPathes = pathes.split(delimiter);
-						for (String path : searchPathes) {
-							File file = new File(path, _fileName);
-							if (file.exists()) {
-								result = getTextfileFromUrl(file.getAbsolutePath(), _charset, true);
-							}
-						}
-					}
-					break;
-				case CUSTOM_PATH:
-				default:
-					result = getTextfileFromUrl(_fileName, _charset, true);
-					if (result != null) {
-						return result;
-					}
-					break;
+    /**
+     * Tries to find _fileNameWithPath in either classpath, systempath or absolute path and opens an {@link InputStream} for it.
+     * Search order is specified by {@link SearchOrder} varargs.
+     *
+     * @param _fileNameWithPath
+     * @param _searchOrder
+     * @return InputStream for the file or null if file could not be found
+     */
+    public static InputStream openInputStreamForFile(String _fileNameWithPath, SearchOrder... _searchOrder) {
+    	if (_searchOrder == null) {
+    		return null;
+    	}
+    	try {
+	    	for (SearchOrder searchOrder : _searchOrder) {
+	            switch (searchOrder) {
+	                case CLASS_PATH:
+	                	InputStream inputStream = FileIoUtil.class.getClassLoader().getResourceAsStream(_fileNameWithPath);
+	                    if (inputStream != null) {
+	                    	return inputStream;
+	                    }
+	                break;
+	                case SYSTEM_PATH:
+	                    String pathes = System.getenv("PATH");
+	                    String os = System.getProperty("os.name");
+	                    String delimiter = ":";
+	                    if (os != null && os.equalsIgnoreCase("windows")) {
+	                        delimiter = ";";
+	                    }
+	                    if (pathes != null) {
+	                        String[] searchPathes = pathes.split(delimiter);
+	                        for (String path : searchPathes) {
+	                            File file = new File(path, _fileNameWithPath);
+	                            if (file.exists() && file.canRead()) {
+	                                return new FileInputStream(file);
+	                            }
+	                        }
+	                    }
+	                break;
+	                case CUSTOM_PATH:
+	                default:
+	                	File file = new File(_fileNameWithPath);
+	                	if (file.exists() && file.canRead()) {
+	                		return new FileInputStream(file);
+	                	}
+	                break;
+	            }
+	        }
+    	} catch (FileNotFoundException _ex) {
+    		return null;
+    	}
 
-			}
-		}
-    	return result;
+    	return null;
     }
 
 }
