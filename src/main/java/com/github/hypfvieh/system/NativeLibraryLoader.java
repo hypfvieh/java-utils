@@ -97,8 +97,8 @@ public final class NativeLibraryLoader {
         Throwable lastErr = null;
         
         if (_order == SearchOrder.SYSTEM_PATH) { // search in system pathes (e.g. content of LD_LIBRARY_PATH)
-            Throwable loadError = loadSystemLib(_libName);
-            if (loadError == null) {
+        	lastErr = loadSystemLib(_libName);
+            if (lastErr == null) {
                 return null;
             }
             
@@ -132,6 +132,7 @@ public final class NativeLibraryLoader {
                     return null;
                 }
             }
+            lastErr = new IOException("No library in custom path found.");
         }
         
         return lastErr;
