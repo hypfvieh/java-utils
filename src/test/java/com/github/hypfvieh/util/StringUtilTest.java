@@ -70,4 +70,10 @@ public class StringUtilTest extends AbstractBaseUtilTest {
         assertEquals("This should be joined", joined);
     }
 
+    @Test
+    public void testAbbreviate() throws Exception {
+        String tstStr = "This should be shortend";
+
+        assertEquals("This should...", StringUtil.abbreviate(tstStr, 14));
+    }
 }
