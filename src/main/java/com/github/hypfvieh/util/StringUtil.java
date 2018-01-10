@@ -34,6 +34,26 @@ public final class StringUtil {
     }
 
     /**
+     * Abbreviates a String using ellipses.
+     *
+     * @param _str
+     * @param _length
+     * @return abbreviated string, original string if string length is lower or equal then desired length or null if input was null
+     */
+    public static String abbreviate(String _str, int _length) {
+        if (_str == null) {
+            return null;
+        }
+        if (_str.length() <= _length) {
+            return _str;
+        }
+
+        String abbr = _str.substring(0, _length -3) + "...";
+
+        return abbr;
+    }
+
+    /**
      * Tries to split a string in a smart way.<br><br>
      *
      * String will be splitted by space and then recombined until each line has
