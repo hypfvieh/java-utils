@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,7 +34,7 @@ public final class FileIoUtil {
      * Trys to read a properties file.
      * Returns null if properties file could not be loaded
      * @param _file
-     * @return Properties Object
+     * @return Properties Object or null
      */
     public static Properties readProperties(File _file) {
         if (_file.exists()) {
@@ -54,7 +55,7 @@ public final class FileIoUtil {
     public static Properties readProperties(InputStream _stream) {
         Properties props = new Properties();
         if (_stream == null) {
-            return props;
+            return null;
         }
 
         try {
@@ -233,16 +234,16 @@ public final class FileIoUtil {
     /**
      * Reads a file and returns it's content as string.
      *
-     * @param _url
+     * @param _file
      * @return
      */
-    public static String readFileToString(String _url) {
-        List<String> localText = getTextfileFromUrl(_url);
+    public static String readFileToString(String _file) {
+        List<String> localText = getTextfileFromUrl(_file);
         if (localText == null) {
             return null;
         }
 
-        return StringUtil.join("", localText);
+        return StringUtil.join(guessLineTerminatorOfFile(_file), localText);
     }
 
     /**
@@ -423,10 +424,7 @@ public final class FileIoUtil {
         if (_append) {
             File file = new File(_fileName);
             if (file.exists()) {
-                List<String> textfileFromUrl = getTextfileFromUrl(_fileName, _charset);
-                if (textfileFromUrl != null) {
-                    allText = StringUtil.join("", textfileFromUrl);
-                }
+                allText = readFileToString(file);
             }
         }
         allText += _fileContent;
@@ -535,6 +533,61 @@ public final class FileIoUtil {
         }
 
         return null;
+    }
+
+    /**
+     * Tries to find the line termination character(s) of the given file.
+     * Only useful for files with text content!
+     *
+     * @param _file
+     * @return never null, will return system default line terminator on any error
+     */
+    public static String guessLineTerminatorOfFile(String _file) {
+        if (StringUtil.isEmpty(_file)) {
+            return SystemUtil.LINE_SEPARATOR;
+        }
+
+        File file = new File(_file);
+        if (!file.exists() || !file.canRead()) {
+            return SystemUtil.LINE_SEPARATOR;
+        }
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))){
+            boolean carriageReturn = false;
+            boolean lineFeed = false;
+            boolean nextIteration = false;
+
+            char[] buf = new char[1];
+            while (reader.read(buf) != -1) {
+
+                if (buf[0] == '\r') {
+                    carriageReturn = true;
+                } else if (buf[0] == '\n') {
+                    lineFeed = true;
+                }
+
+                // found both, must be DOS/windows like separators
+                if (carriageReturn && lineFeed) {
+                    return "\r\n";
+                }
+
+                // found only carriage return, check next character as well
+                if (carriageReturn && !nextIteration) {
+                    nextIteration = true;
+                    continue;
+                }
+
+                if (lineFeed) { // we have a line-feed and no carriage return before
+                    return "\n";
+                } else if (carriageReturn) { // only carriage return found before, seems to macOS 9 line ending
+                    return "\r";
+                }
+            }
+        } catch (IOException _ex) {
+            return SystemUtil.LINE_SEPARATOR;
+        }
+
+        return SystemUtil.LINE_SEPARATOR;
     }
 
 }
