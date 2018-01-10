@@ -305,6 +305,25 @@ public final class StringUtil {
         return _str.trim().isEmpty();
     }
 
+    /**
+     * Checks if the given String is either null or empty.
+     * Blank means:<br>
+     * <pre>
+     * " " - false
+     * "" - true
+     * null - true
+     * " xx" - false
+     * </pre>
+     * @param _str
+     * @return
+     */
+    public static boolean isEmpty(String _str) {
+        if (_str == null) {
+            return true;
+        }
+
+        return _str.isEmpty();
+    }
 
     /**
      * Checks if given String is blank (see {@link #isBlank(String)}.<br>
@@ -366,4 +385,72 @@ public final class StringUtil {
         return join(_delimiter, Arrays.asList(_strings));
     }
 
+    /**
+     * Converts a camel-case string to an upper-case string
+     * where each upper-case character except the first in
+     * the input string is preceded by an underscore in the
+     * output string.
+     * Empty or null strings are returned as-is.
+     * <pre>
+     *   convertCamelToUpperCase(null) = null
+     *   convertCamelToUpperCase("") = ""
+     *   convertCamelToUpperCase("  ") = "  "
+     *   convertCamelToUpperCase("Hello") = "HELLO"
+     *   convertCamelToUpperCase("HELLO") = "HELLO"
+     *   convertCamelToUpperCase("AcmeCompany") = "ACME_COMPANY"
+     * </pre>
+     * @param _str camel-case string
+     * @return upper-case string
+     */
+    public static String convertCamelToUpperCase(String _str) {
+        if (isEmpty(_str) || isAllUpperCase(_str)) {
+            return _str;
+        }
+        StringBuffer sb = new StringBuffer(String.valueOf(_str.charAt(0)).toUpperCase());
+        for (int i = 1; i < _str.length(); i++) {
+            char c = _str.charAt(i);
+            if (c >= 'A' && c <= 'Z') {
+                sb.append('_');
+            }
+            sb.append(c);
+        }
+        return sb.toString().toUpperCase();
+    }
+
+    /**
+     * Tries to convert upper-case string to camel-case.
+     * The given string will be analyzed and all string parts preceded by an underline character will be
+     * converted to upper-case, all other following characters to lower-case.
+     * @param _str
+     * @return
+     */
+    public static String convertUpperToCamelCase(String _str) {
+        if (_str == null || isBlank(_str)) {
+            return _str;
+        } else if (!_str.contains("_")) {
+            return (_str.charAt(0) + "").toUpperCase() + _str.substring(1);
+        }
+
+        StringBuffer sb = new StringBuffer(String.valueOf(_str.charAt(0)).toUpperCase());
+        for (int i = 1; i < _str.length(); i++) {
+            char c = _str.charAt(i);
+            if (c == '_') {
+                i++; // get next character and convert to upper case
+                c = String.valueOf(_str.charAt(i)).toUpperCase().charAt(0);
+            } else {
+                c = String.valueOf(c).toLowerCase().charAt(0);
+            }
+            sb.append(c);
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Checks if the given String is in all upper-case.
+     * @param _str
+     * @return true if upper-case, false otherwise. Also false if string is null or empty.
+     */
+    public static boolean isAllUpperCase(String _str) {
+        return isEmpty(_str) || !_str.matches(".*[a-z].*");
+    }
 }

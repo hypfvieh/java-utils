@@ -40,7 +40,7 @@ public final class FileIoUtil {
             try {
                 return readProperties(new FileInputStream(_file));
             } catch (FileNotFoundException _ex) {
-                  LOGGER.info("Could not load properties file: " + _file, _ex);
+                LOGGER.info("Could not load properties file: " + _file, _ex);
             }
         }
         return null;
@@ -158,7 +158,7 @@ public final class FileIoUtil {
      * @return fileContent as List or null if file is empty or an error occurred.
      */
     public static List<String> getTextfileFromUrl(String _url, Charset _charset) {
-       return getTextfileFromUrl(_url, _charset, false);
+        return getTextfileFromUrl(_url, _charset, false);
     }
 
     /**
@@ -291,12 +291,11 @@ public final class FileIoUtil {
         try {
             br = new BufferedReader(new InputStreamReader(_stream, _charset));
             for (int c = br.read(); c != -1; c = br.read()) {
-                sb.append((char)c);
+                sb.append((char) c);
             }
         } catch (IOException _ex) {
             LOGGER.error("Error while reading resource to string: ", _ex);
         }
-
 
         return sb.toString();
     }
@@ -310,7 +309,7 @@ public final class FileIoUtil {
      */
     public static Properties loadPropertiesFromClasspath(String _propertiesFile) throws IOException {
         InputStream is = FileIoUtil.class.getClassLoader().getResourceAsStream(_propertiesFile);
-        if (is== null) {
+        if (is == null) {
             throw new IOException("Resource [" + _propertiesFile + "] not found in classpath.");
         }
 
@@ -391,15 +390,15 @@ public final class FileIoUtil {
                 }
                 return contents;
             } catch (IOException _ex) {
-            	if (!_silent) {
-            		LOGGER.error("Error while reading resource to string: ", _ex);
-            	}
+                if (!_silent) {
+                    LOGGER.error("Error while reading resource to string: ", _ex);
+                }
                 return null;
             }
         } else {
-        	if (_silent) {
-        		return null;
-        	}
+            if (_silent) {
+                return null;
+            }
         }
 
         return contents;
@@ -493,49 +492,49 @@ public final class FileIoUtil {
      * @return InputStream for the file or null if file could not be found
      */
     public static InputStream openInputStreamForFile(String _fileNameWithPath, SearchOrder... _searchOrder) {
-    	if (_searchOrder == null) {
-    		return null;
-    	}
-    	try {
-	    	for (SearchOrder searchOrder : _searchOrder) {
-	            switch (searchOrder) {
-	                case CLASS_PATH:
-	                	InputStream inputStream = FileIoUtil.class.getClassLoader().getResourceAsStream(_fileNameWithPath);
-	                    if (inputStream != null) {
-	                    	return inputStream;
-	                    }
-	                break;
-	                case SYSTEM_PATH:
-	                    String pathes = System.getenv("PATH");
-	                    String os = System.getProperty("os.name");
-	                    String delimiter = ":";
-	                    if (os != null && os.equalsIgnoreCase("windows")) {
-	                        delimiter = ";";
-	                    }
-	                    if (pathes != null) {
-	                        String[] searchPathes = pathes.split(delimiter);
-	                        for (String path : searchPathes) {
-	                            File file = new File(path, _fileNameWithPath);
-	                            if (file.exists() && file.canRead()) {
-	                                return new FileInputStream(file);
-	                            }
-	                        }
-	                    }
-	                break;
-	                case CUSTOM_PATH:
-	                default:
-	                	File file = new File(_fileNameWithPath);
-	                	if (file.exists() && file.canRead()) {
-	                		return new FileInputStream(file);
-	                	}
-	                break;
-	            }
-	        }
-    	} catch (FileNotFoundException _ex) {
-    		return null;
-    	}
+        if (_searchOrder == null) {
+            return null;
+        }
+        try {
+            for (SearchOrder searchOrder : _searchOrder) {
+                switch (searchOrder) {
+                case CLASS_PATH:
+                    InputStream inputStream = FileIoUtil.class.getClassLoader().getResourceAsStream(_fileNameWithPath);
+                    if (inputStream != null) {
+                        return inputStream;
+                    }
+                    break;
+                case SYSTEM_PATH:
+                    String pathes = System.getenv("PATH");
+                    String os = System.getProperty("os.name");
+                    String delimiter = ":";
+                    if (os != null && os.equalsIgnoreCase("windows")) {
+                        delimiter = ";";
+                    }
+                    if (pathes != null) {
+                        String[] searchPathes = pathes.split(delimiter);
+                        for (String path : searchPathes) {
+                            File file = new File(path, _fileNameWithPath);
+                            if (file.exists() && file.canRead()) {
+                                return new FileInputStream(file);
+                            }
+                        }
+                    }
+                    break;
+                case CUSTOM_PATH:
+                default:
+                    File file = new File(_fileNameWithPath);
+                    if (file.exists() && file.canRead()) {
+                        return new FileInputStream(file);
+                    }
+                    break;
+                }
+            }
+        } catch (FileNotFoundException _ex) {
+            return null;
+        }
 
-    	return null;
+        return null;
     }
 
 }

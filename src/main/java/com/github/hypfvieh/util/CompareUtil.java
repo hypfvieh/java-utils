@@ -30,6 +30,11 @@ public class CompareUtil {
         return false;
     }
 
+    /**
+     * Throws a {@link NullPointerException} if any of the given objects is <code>null</code>.
+     * @param _errMsg
+     * @param _objects
+     */
     public static void throwIfAnyNull(String _errMsg, Object... _objects) {
         if (isAnyNull(_objects)) {
             throw new NullPointerException(_errMsg);
@@ -69,12 +74,21 @@ public class CompareUtil {
         return _b ? _t : (_t instanceof CharSequence ? (T) "" : null);
     }
 
+    /**
+     * Returns the second parameter if the condition is false
+     * or null if the condition is true. Returns empty string
+     * instead of null for implementors of {@link CharSequence}.
+     * @param _b condition
+     * @param _t object
+     * @return object or null
+     */
     public static <T> T ifFalse(boolean _b, T _t) {
         return ifTrue(!_b, _t);
     }
 
 
-    /** Returns true if the specified object equals at least one of the specified other objects.
+    /**
+     * Returns true if the specified object equals at least one of the specified other objects.
      * @param _obj object
      * @param _arrObj array of objects to compare to
      * @return true if equal, false otherwise or if either parameter is null

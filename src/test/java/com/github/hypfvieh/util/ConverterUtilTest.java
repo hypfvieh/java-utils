@@ -1,15 +1,15 @@
 package com.github.hypfvieh.util;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import org.junit.Test;
 
 import com.github.hypfvieh.AbstractBaseUtilTest;
 
 public class ConverterUtilTest extends AbstractBaseUtilTest {
 
-
-    /**
-     * Test of readPropertiesBoolean method, of class Util.
-     */
     @Test
     public void testStrToBool() {
         System.out.println("strToBool");
@@ -39,6 +39,33 @@ public class ConverterUtilTest extends AbstractBaseUtilTest {
         assertEquals(false, ConverterUtil.strToBool(bool8));
         assertEquals(false, ConverterUtil.strToBool(bool9));
         assertEquals(false, ConverterUtil.strToBool(bool10));
+
+    }
+
+    @Test
+    public void testStrToInt() {
+        assertEquals(Integer.valueOf(1), ConverterUtil.strToInt("1"));
+        assertEquals(Integer.valueOf(-1), ConverterUtil.strToInt("-1"));
+
+        assertEquals(Integer.valueOf(4711), ConverterUtil.strToInt("ab2000", 4711));
+        assertEquals(Integer.valueOf(4711), ConverterUtil.strToInt("4711", 815));
+    }
+
+    @Test
+    public void testToProperties() {
+        Map<Object, Object> someMap = new HashMap<>();
+        someMap.put("foo", "bar");
+        someMap.put(123, "456");
+        someMap.put("str", 555);
+        someMap.put(999, 888);
+
+        Properties properties = ConverterUtil.toProperties(someMap);
+
+        assertEquals("bar", properties.get("foo"));
+        assertEquals("456", properties.get(123));
+
+        assertEquals(888, properties.get(999));
+        assertEquals(555, properties.get("str"));
 
     }
 }

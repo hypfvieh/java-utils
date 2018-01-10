@@ -27,9 +27,32 @@ public final class SystemUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SystemUtil.class);
 
+    /** List of known terminal emulators on linux/unix systems. */
+    private static final String[] TERMINAL_EMULATORS = new String[]
+            {"x-terminal-emulator", "gnome-terminal", "mate-terminal",
+                    "konsole", "xterm", "rxvt", "xdg-terminal", "lxterminal", "pterm",
+                    "aterm", "eterm", "roxterm", "qterminal", "terminator",
+                    "tmux", "screen"};
+
+    /** Character that separates components of a file path. This is "/" on UNIX and "\" on Windows. */
+    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    /** Sequence used by operating system to separate lines in text files. */
+    public static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    /** The system's temporary-file directory. */
+    public static final String TMP_DIR        = normalizePath(System.getProperty("java.io.tmpdir"));
+
     private SystemUtil() {
 
     }
+
+    /**
+     * Determines the operating system's type and version.
+     * @return the OS type and version as a string
+     */
+    public static String getOs() {
+        return (System.getProperty("os.name") + " " + System.getProperty("os.version"));
+    }
+
 
     /**
      * Gets the host name of the local machine.
@@ -64,7 +87,37 @@ public final class SystemUtil {
      * @return
      */
     public static String getTempDir() {
-        return System.getProperty("java.io.tmpdir");
+        return TMP_DIR;
+    }
+
+    /**
+     * Determines the Java version of the executing JVM.
+     * @return Java version
+     */
+    public static String getJavaVersion() {
+        String[] sysPropParms = new String[] {"java.runtime.version", "java.version"};
+        for (int i = 0; i < sysPropParms.length; i++) {
+            String val = System.getProperty(sysPropParms[i]);
+            if (!StringUtil.isEmpty(val)) {
+                return val;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Determines the current logged on user.
+     * @return logged on user
+     */
+    public static String getCurrentUser() {
+        String[] sysPropParms = new String[] {"user.name", "USER", "USERNAME"};
+        for (int i = 0; i < sysPropParms.length; i++) {
+            String val = System.getProperty(sysPropParms[i]);
+            if (!StringUtil.isEmpty(val)) {
+                return val;
+            }
+        }
+        return null;
     }
 
     /**
@@ -299,6 +352,70 @@ public final class SystemUtil {
         }
 
         return _default;
-
     }
+
+    /**
+     * Tries to find the "default" terminal emulator.
+     * This will be cmd.exe on windows and may vary on linux/unix systems dependening on installed terminal programs.
+     * On linux/unix there is no generic way to find the default terminal,
+     * so all known terminal programs will be tried until any of them is found.
+     * @return
+     */
+    public static String guessDefaultTerminal() {
+        if (System.getProperty("os.name", "").equalsIgnoreCase("windows")) {
+            return "cmd.exe";
+        }
+
+        String envPath = System.getenv("PATH");
+        if (envPath == null) {
+            throw new RuntimeException("Could not find enviroment PATH setting.");
+        }
+        String[] pathes = envPath.split(":");
+
+        for (String term : TERMINAL_EMULATORS) {
+            for (String path : pathes) {
+                File terminalExe = new File(concatFilePath(path, term));
+                if (terminalExe.exists() && terminalExe.canExecute()) {
+                    return terminalExe.getAbsolutePath();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Normalize a file system path expression for the current OS.
+     * Replaces path separators by this OS's path separator.
+     * Appends a final path separator if parameter is set
+     * and if not yet present.
+     * @param _path path
+     * @param _appendFinalSeparator controls appendix of separator at the end
+     * @return normalized path
+     */
+    public static String normalizePath(String _path, boolean _appendFinalSeparator) {
+        if (_path == null) {
+            return _path;
+        }
+
+        String path = _path
+            .replace("\\", FILE_SEPARATOR)
+            .replace("/", FILE_SEPARATOR);
+        if (_appendFinalSeparator && !path.endsWith(FILE_SEPARATOR)) {
+            path += FILE_SEPARATOR;
+        }
+        return path;
+    }
+
+    /**
+     * Normalize a file system path expression for the current OS.
+     * Replaces path separators by this OS's path separator.
+     * Appends a final path separator unless present.
+     * @param _path path
+     * @return normalized path
+     */
+    public static String normalizePath(String _path) {
+        return normalizePath(_path, true);
+    }
+
 }

@@ -44,7 +44,7 @@ public final class TypeUtil {
     public static boolean isDouble(String _str) {
         return isDouble(_str, true);
     }
-    
+
     /**
      * Checks if the given string is a valid double (including negative values) using the given separator.
      * @param _str string to check
@@ -62,7 +62,7 @@ public final class TypeUtil {
      * @param _allowNegative set to true if negative double should be allowed
      * @return true if given string is double, false otherwise
      */
-    public static boolean isDouble(String _str, boolean _allowNegative) {        
+    public static boolean isDouble(String _str, boolean _allowNegative) {
         return isDouble(_str, DecimalFormatSymbols.getInstance().getDecimalSeparator(), _allowNegative);
     }
 
@@ -80,19 +80,19 @@ public final class TypeUtil {
         } else {
             pattern = pattern.replace("XXX", _separator + "?");
         }
-        
+
         if (_allowNegative) {
             pattern = "^-?" + pattern;
         } else {
             pattern = "^" + pattern;
         }
-        
+
         if (_str != null) {
             return _str.matches(pattern) || isInteger(_str, _allowNegative);
         }
         return false;
     }
-    
+
     /**
      * Check if string is integer (including negative integers).
      *
@@ -224,19 +224,17 @@ public final class TypeUtil {
      * Checks if any of the passed in objects is null.
      * @param _objects array of objects, may be null
      * @return true if null found, false otherwise
+     * @deprecated Use {@link CompareUtil#isAnyNull(Object...)}
      */
+    @Deprecated
     public static boolean isAnyNull(Object... _objects) {
-        if (_objects == null) {
-            return true;
-        }
-        for (Object obj : _objects) {
-            if (obj == null) {
-                return true;
-            }
-        }
-        return false;
+        return CompareUtil.isAnyNull(_objects);
     }
 
+    /**
+     * @deprecated Use {@link CompareUtil#throwIfAnyNull(String, Object...)}
+     */
+    @Deprecated
     public static void throwIfAnyNull(String _errMsg, Object... _objects) {
         if (isAnyNull(_objects)) {
             throw new NullPointerException(_errMsg);
@@ -247,17 +245,12 @@ public final class TypeUtil {
      * @param _obj object
      * @param _arrObj array of objects to compare to
      * @return true if equal, false otherwise or if either parameter is null
+     *
+     * @deprecated Use {@link CompareUtil#equalsOne(Object, Object...)}
      */
+   @Deprecated
    public static boolean equalsOne(Object _obj, Object... _arrObj) {
-       if (_obj == null || _arrObj == null) {
-           return false;
-       }
-       for (Object o : _arrObj) {
-           if (o != null && _obj.equals(o)) {
-               return true;
-           }
-       }
-       return false;
+       return CompareUtil.equalsOne(_obj, _arrObj);
    }
 
     /**
@@ -275,11 +268,11 @@ public final class TypeUtil {
    @SuppressWarnings("unchecked")
    public static <K, V> List<Map<K, V>> splitMap(Map<K, V> _map, int _nbElements) throws InstantiationException, IllegalAccessException  {
        List<Map<K, V>> lofm = new ArrayList<>();
-       lofm.add((Map<K, V>) _map.getClass().newInstance());
+       lofm.add(_map.getClass().newInstance());
        for (Entry<K, V> e : _map.entrySet()) {
            Map<K, V> lastSubMap = lofm.get(lofm.size() - 1);
            if (lastSubMap.size() == _nbElements) {
-               lofm.add((Map<K, V>) _map.getClass().newInstance());
+               lofm.add(_map.getClass().newInstance());
                lastSubMap = lofm.get(lofm.size() - 1);
            }
            lastSubMap.put(e.getKey(), e.getValue());
@@ -326,7 +319,7 @@ public final class TypeUtil {
    }
 
    /**
-    * Returns integer converted from string or default if not string was not a integer type.
+    * Returns integer converted from string or default if string could not be converted to int.
     *
     * @param _possibleInt
     * @param _default

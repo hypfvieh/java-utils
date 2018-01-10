@@ -14,8 +14,8 @@ import java.util.Properties;
  * the usage of {@link java.util.Hashtable#entrySet()} which allows
  * write operations as well.
  */
-@SuppressWarnings("serial")
 public class LinkedProperties extends Properties {
+    private static final long serialVersionUID = 1L;
 
     private final LinkedHashSet<Object> insertionOrderKeys = new LinkedHashSet<Object>();
 

@@ -1,5 +1,6 @@
 package com.github.hypfvieh.util;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -12,15 +13,6 @@ import com.github.hypfvieh.AbstractBaseUtilTest;
  * @author hypfvieh
  */
 public class TypeUtilTest extends AbstractBaseUtilTest {
-
-
-    @Test
-    public void testIsAnyNull() {
-        assertFalse(TypeUtil.isAnyNull());
-        assertTrue(TypeUtil.isAnyNull((Object[]) null));
-        assertTrue(TypeUtil.isAnyNull("", null));
-        assertTrue(TypeUtil.isAnyNull(null, null));
-    }
 
     @Test
     public void testCreateProperties() {
@@ -118,5 +110,14 @@ public class TypeUtilTest extends AbstractBaseUtilTest {
         assertEquals("a", map.get("1"));
         assertTrue(map.containsKey("1"));
         assertTrue(map.containsValue("a"));
+    }
+
+    @Test
+    public void testCreateList() throws Exception {
+        List<String> list = TypeUtil.createList("u", "r", "gr8");
+        assertCollection(list, "u", "r", "gr8");
+
+        assertNotNull(TypeUtil.createList());
+        assertNotNull(TypeUtil.createList((Object[]) null));
     }
 }

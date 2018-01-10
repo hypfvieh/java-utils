@@ -76,4 +76,25 @@ public class StringUtilTest extends AbstractBaseUtilTest {
 
         assertEquals("This should...", StringUtil.abbreviate(tstStr, 14));
     }
+
+    @Test
+    public void testConvertCamelToUpperCase() {
+        assertNull(StringUtil.convertCamelToUpperCase(null));
+        assertEquals("", StringUtil.convertCamelToUpperCase(""));
+        assertEquals("  ", StringUtil.convertCamelToUpperCase("  "));
+        assertEquals("QUOTE_STATUS_REPORT", StringUtil.convertCamelToUpperCase("QuoteStatusReport"));
+        assertEquals("HELLO", StringUtil.convertCamelToUpperCase("hello"));
+        assertEquals("MEDIA", StringUtil.convertCamelToUpperCase("MEDIA"));
+        assertEquals("ACME_COMPANY", StringUtil.convertCamelToUpperCase("AcmeCompany"));
+    }
+
+    @Test
+    public void testConvertUpperToCamelCase() {
+        assertNull(StringUtil.convertUpperToCamelCase(null));
+        assertEquals("", StringUtil.convertUpperToCamelCase(""));
+        assertEquals("  ", StringUtil.convertUpperToCamelCase("  "));
+        assertEquals("QuoteStatusReport", StringUtil.convertUpperToCamelCase("QUOTE_STATUS_REPORT"));
+        assertEquals("Hello", StringUtil.convertUpperToCamelCase("hello"));
+        assertEquals("UserResponse", StringUtil.convertUpperToCamelCase("UserResponse"));
+    }
 }
