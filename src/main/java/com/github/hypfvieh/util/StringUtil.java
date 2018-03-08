@@ -192,6 +192,10 @@ public final class StringUtil {
         if (_str == null) {
             return null;
         }
+        if (_str.isEmpty()) {
+            return _str;
+        }
+
         return _str.substring(0, 1).toLowerCase() + _str.substring(1);
     }
 
@@ -204,6 +208,9 @@ public final class StringUtil {
     public static String upperCaseFirstChar(String _str) {
         if (_str == null) {
             return null;
+        }
+        if (_str.isEmpty()) {
+            return _str;
         }
         return _str.substring(0, 1).toUpperCase() + _str.substring(1);
     }

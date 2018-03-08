@@ -268,7 +268,7 @@ public final class SystemUtil {
      * Only returns the extension, without the leading dot.
      *
      * @param _fileName
-     * @return extension, empty string if not dot was found in filename or null if given String was null
+     * @return extension, empty string if no dot was found in filename or null if given String was null
      */
     public static String getFileExtension(String _fileName) {
         if (_fileName == null) {
@@ -279,6 +279,17 @@ public final class SystemUtil {
             return "";
         }
         return _fileName.substring(lastDot + 1);
+    }
+
+    /**
+     * Extracts the file extension (part behind last dot of a filename).
+     * Only returns the extension, without the leading dot.
+     *
+     * @param _file
+     * @return extension, empty string if no dot was found in filename or null if given String was null
+     */
+    public static String getFileExtension(File _file) {
+        return getFileExtension(_file.getAbsolutePath());
     }
 
     /**
