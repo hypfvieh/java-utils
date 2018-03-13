@@ -23,7 +23,7 @@ public class TimeMeasureTest extends AbstractBaseUtilTest {
         long elapsed = tm.getElapsed();
         Assert.assertTrue(elapsed < 10);
 
-        tm.startTm = tm.getStartTime() - 10000;
+        tm.setStartTm(tm.getStartTime() - 10000);
         elapsed = tm.getElapsed();
         Assert.assertTrue("Elapsed was " + elapsed, elapsed >= 10000);
         Assert.assertTrue("toString() returned " + tm, tm.toString().matches("^[0-9]+\\.[0-9]s$"));

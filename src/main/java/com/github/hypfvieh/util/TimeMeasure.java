@@ -11,13 +11,35 @@ import java.util.TimeZone;
  */
 public class TimeMeasure {
 
-    /** Start time in milliseconds. */
-    //CHECKSTYLE:OFF
-    volatile long startTm;
-    //CHECKSTYLE:ON
+    public static interface ITimeMeasureFormat {
+        public String format(long _durationInMillis);
+    }
 
-    public TimeMeasure() {
+    /** Start time in milliseconds. */
+    private volatile long startTm;
+
+    /** Formatter used for {@link #toString()} */
+    private final ITimeMeasureFormat tmf;
+    
+    /**
+     * Create a new instance using _ts millis as 
+     * @param _formatAsSecondsAfter
+     */
+    public TimeMeasure(ITimeMeasureFormat _formatter) {
+        tmf = _formatter;
         reset();
+    }
+    
+    /**
+     * Create a new instance, used a formatter converting everything >= 5000 ms to seconds (X.Y -> 6.1).
+     */
+    public TimeMeasure() {
+        this(new ITimeMeasureFormat() {
+            @Override
+            public String format(long _durationInMillis) {
+                return _durationInMillis >= 5000 ? ((long) ((_durationInMillis / 1000d) * 10) / 10d) + "s" : _durationInMillis + "ms";
+            }
+        });
     }
 
     /**
@@ -76,6 +98,14 @@ public class TimeMeasure {
         return sdf.format(elapsedTime);
     }
 
+    /**
+     * Change the start time (for unit testing only!).
+     * @param _tm
+     */
+    void setStartTm(long _tm) {
+        startTm = _tm;
+    }
+    
     public long getElapsedAndReset() {
         long elapsed = getElapsed();
         reset();
@@ -88,8 +118,10 @@ public class TimeMeasure {
      */
     @Override
     public String toString() {
-        long elapsed = getElapsed();
-        return elapsed >= 5000 ? ((long) ((elapsed / 1000d) * 10) / 10d) + "s" : elapsed + "ms";
+        if (tmf == null) {
+            return String.valueOf(getElapsed());
+        }
+        return tmf.format(getElapsed());
     }
 
 }
