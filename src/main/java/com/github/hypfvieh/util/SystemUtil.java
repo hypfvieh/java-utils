@@ -68,7 +68,7 @@ public final class SystemUtil {
 
     /**
      * Returns the current working directory.
-     * @return
+     * @return current working dir
      */
     public static String getWorkingDirectory() {
         return System.getProperty("user.dir");
@@ -76,7 +76,7 @@ public final class SystemUtil {
 
     /**
      * Returns the running class path.
-     * @return
+     * @return String with classpath
      */
     public static String getRunningClassPath() {
         return ClassLoader.getSystemClassLoader().getResource(".").getPath();
@@ -84,7 +84,7 @@ public final class SystemUtil {
 
     /**
      * Returns the temp directory of this platform.
-     * @return
+     * @return temp directory
      */
     public static String getTempDir() {
         return TMP_DIR;
@@ -223,7 +223,7 @@ public final class SystemUtil {
      * @param _length length of random chars
      * @param _timestamp add timestamp (yyyyMMdd_HHmmss-SSS) to directory name
      * @param _deleteOnExit mark directory for deletion on jvm termination
-     * @return
+     * @return file
      */
     public static File createTempDirectory(String _path, String _prefix, int _length, boolean _timestamp, boolean _deleteOnExit) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd_HHmmss-SSS");
@@ -267,7 +267,7 @@ public final class SystemUtil {
      * Extracts the file extension (part behind last dot of a filename).
      * Only returns the extension, without the leading dot.
      *
-     * @param _fileName
+     * @param _fileName filename
      * @return extension, empty string if no dot was found in filename or null if given String was null
      */
     public static String getFileExtension(String _fileName) {
@@ -338,6 +338,8 @@ public final class SystemUtil {
 
     /**
      * Read the JARs manifest and try to get the current program version from it.
+     * @param _class class to use as entry point
+     * @param _default default string to use if version could not be found
      * @return version or null
      */
     public static String getApplicationVersionFromJar(Class<?> _class, String _default) {
@@ -367,10 +369,10 @@ public final class SystemUtil {
 
     /**
      * Tries to find the "default" terminal emulator.
-     * This will be cmd.exe on windows and may vary on linux/unix systems dependening on installed terminal programs.
+     * This will be cmd.exe on windows and may vary on linux/unix systems depending on installed terminal programs.
      * On linux/unix there is no generic way to find the default terminal,
      * so all known terminal programs will be tried until any of them is found.
-     * @return
+     * @return String with terminal name or null if terminal could not be determined
      */
     public static String guessDefaultTerminal() {
         if (System.getProperty("os.name", "").equalsIgnoreCase("windows")) {

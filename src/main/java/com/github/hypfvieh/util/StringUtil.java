@@ -36,8 +36,8 @@ public final class StringUtil {
     /**
      * Abbreviates a String using ellipses.
      *
-     * @param _str
-     * @param _length
+     * @param _str string to abbrivate
+     * @param _length max length
      * @return abbreviated string, original string if string length is lower or equal then desired length or null if input was null
      */
     public static String abbreviate(String _str, int _length) {
@@ -62,8 +62,8 @@ public final class StringUtil {
      *
      * It is ensured that each line has a maximum length of _len, it could be short but never longer.
      *
-     * @param _text
-     * @param _len
+     * @param _text text to split
+     * @param _len max length per line
      * @return list or null if _text was null
      */
     public static List<String> smartWordSplit(String _text, int _len) {
@@ -142,8 +142,8 @@ public final class StringUtil {
      * Splits a Text to equal parts.
      * There is no detection of words, everything will be cut to the same length.
      *
-     * @param _text
-     * @param _len
+     * @param _text text to split
+     * @param _len max length per line
      * @return list of string splitted to _len or null if _text was null
      */
     public static List<String> splitEqually(String _text, int _len) {
@@ -161,8 +161,8 @@ public final class StringUtil {
     /**
      * Replace all placeholders in given string by value of the corresponding key in given Map.
      *
-     * @param _searchStr
-     * @param _replacements
+     * @param _searchStr search string
+     * @param _replacements replacement
      * @return String or null if _searchStr was null
      */
     public static String replaceByMap(String _searchStr, Map<String, String> _replacements) {
@@ -185,8 +185,8 @@ public final class StringUtil {
     /**
      * Lower case the first letter of the given string.
      *
-     * @param _str
-     * @return
+     * @param _str string
+     * @return lowercased string
      */
     public static String lowerCaseFirstChar(String _str) {
         if (_str == null) {
@@ -202,8 +202,8 @@ public final class StringUtil {
     /**
      * Upper case the first letter of the given string.
      *
-     * @param _str
-     * @return
+     * @param _str string
+     * @return uppercased string
      */
     public static String upperCaseFirstChar(String _str) {
         if (_str == null) {
@@ -218,10 +218,13 @@ public final class StringUtil {
     /**
      * Simple rot13 implementation.
      *
-     * @param _input
-     * @return
+     * @param _input input to scramble
+     * @return scrambled input (null if input was null)
      */
     public static String rot13(String _input) {
+        if (_input == null) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < _input.length(); i++) {
             char c = _input.charAt(i);
@@ -243,8 +246,8 @@ public final class StringUtil {
      * Checks if any of the given strings in _compare is equal to _str (case-insensitive).<br>
      * Will return true if both parameters are null or _str is null and _compare is empty.
      *
-     * @param _str
-     * @param _compare
+     * @param _str string to check
+     * @param _compare compare strings
      * @return true if equal false otherwise
      */
     public static boolean equalsIgnoreCaseAny(String _str, String... _compare) {
@@ -254,8 +257,8 @@ public final class StringUtil {
      * Checks if any of the given strings in _compare is equal to _str (case-sensitive).<br>
      * Will return true if both parameters are null or _str is null and _compare is empty.
      *
-     * @param _str
-     * @param _compare
+     * @param _str string to check
+     * @param _compare compare strings
      * @return true if equal false otherwise
      */
     public static boolean equalsAny(String _str, String... _compare) {
@@ -266,9 +269,9 @@ public final class StringUtil {
      * Checks if any of the given strings in _compare is equal to _str (either case-insensitive or case-sensitive).<br>
      * Will return true if both parameters are null or _str is null and _compare is empty.
      *
-     * @param _ignoreCase
-     * @param _str
-     * @param _compare
+     * @param _ignoreCase ignore case
+     * @param _str string to check
+     * @param _compare compare strings
      * @return true if equal false otherwise
      */
     public static boolean equalsAny(boolean _ignoreCase, String _str, String... _compare) {
@@ -301,8 +304,8 @@ public final class StringUtil {
      * null - true
      * " xx" - false
      * </pre>
-     * @param _str
-     * @return
+     * @param _str string to test
+     * @return true if string is blank or null, false otherwise
      */
     public static boolean isBlank(String _str) {
         if (_str == null) {
@@ -321,8 +324,8 @@ public final class StringUtil {
      * null - true
      * " xx" - false
      * </pre>
-     * @param _str
-     * @return
+     * @param _str string to test
+     * @return true if string is empty or null, false otherwise
      */
     public static boolean isEmpty(String _str) {
         if (_str == null) {
@@ -346,7 +349,7 @@ public final class StringUtil {
     /**
      * Generate a simple (cryptographic insecure) random string.
      * @param _length length of random string
-     * @return random string or empty string if _length <= 0
+     * @return random string or empty string if _length &lt;= 0
      */
     public static String randomString(int _length) {
         if (_length <= 0) {
@@ -361,8 +364,8 @@ public final class StringUtil {
 
     /**
      * Combines the Strings in _string using _delimiter.
-     * @param _delimiter
-     * @param _strings
+     * @param _delimiter delimiting string
+     * @param _strings strings to join
      * @return null if _strings is null, concatenated string otherwise
      */
     public static String join(String _delimiter, List<String> _strings) {
@@ -384,8 +387,8 @@ public final class StringUtil {
 
     /**
      * Combines the Strings in _string using _delimiter.
-     * @param _delimiter
-     * @param _strings
+     * @param _delimiter delimiting string
+     * @param _strings string to join
      * @return null if _strings is null, concatenated string otherwise
      */
     public static String join(String _delimiter, String[] _strings) {
@@ -428,8 +431,8 @@ public final class StringUtil {
      * Tries to convert upper-case string to camel-case.
      * The given string will be analyzed and all string parts preceded by an underline character will be
      * converted to upper-case, all other following characters to lower-case.
-     * @param _str
-     * @return
+     * @param _str string to convert
+     * @return converted string or original string if there was nothing to do
      */
     public static String convertUpperToCamelCase(String _str) {
         if (_str == null || isBlank(_str)) {
@@ -454,7 +457,7 @@ public final class StringUtil {
 
     /**
      * Checks if the given String is in all upper-case.
-     * @param _str
+     * @param _str string to check
      * @return true if upper-case, false otherwise. Also false if string is null or empty.
      */
     public static boolean isAllUpperCase(String _str) {

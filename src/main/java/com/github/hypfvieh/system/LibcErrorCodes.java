@@ -2,7 +2,7 @@ package com.github.hypfvieh.system;
 
 /**
  * Enum of error codes used in various c libararies.
- * 
+ *
  * @author hypfvieh
  * @since v1.0.3 - 2018-03-09
  */
@@ -108,7 +108,7 @@ public enum LibcErrorCodes {
 
     /** Math result not representable. */
     ERANGE(34),
-    
+
     /** Resource deadlock would occur. */
     EDEADLK(35),
 
@@ -126,10 +126,10 @@ public enum LibcErrorCodes {
 
     /** Too many symbolic links encountered. */
     ELOOP(40),
-    
+
     /** Operation would block. */
     EWOULDBLOCK(11),
-    
+
     /** No message of desired type. */
     ENOMSG(42),
 
@@ -177,10 +177,10 @@ public enum LibcErrorCodes {
 
     /** Invalid slot. */
     EBADSLT(57),
-    
+
     /** Resource deadlock would occur. */
     EDEADLOCK(35),
-    
+
     /** Bad font file format. */
     EBFONT(59),
 
@@ -399,15 +399,15 @@ public enum LibcErrorCodes {
 
     /** State not recoverable. */
     ENOTRECOVERABLE(131),
-    
+
     /** Operation not possible due to RF-kill. */
     ERFKILL(132),
-    
+
     /** Memory page has hardware error. */
     EHWPOISON(133);
-    
+
     private final int errorCode;
-    
+
     private LibcErrorCodes(int _errNum) {
         errorCode = _errNum;
     }
@@ -415,14 +415,14 @@ public enum LibcErrorCodes {
     public int getErrorCode() {
         return errorCode;
     }
-    
+
     /**
      * Converts an errorCode to the enum value.
      * If code is unknown, null is returned.
      * If the code is ambiguous (e.g. EAGAIN/EWOULDBLOCK, EDEADLOCK/EDEADLK) the first match will be returned.
-     * @param _code
-     * 
-     * @return enum or null if code unknown 
+     * @param _code error code
+     *
+     * @return enum or null if code unknown
      */
     public static LibcErrorCodes errorCodeToEnum(int _code) {
         for (LibcErrorCodes errCode : LibcErrorCodes.values()) {

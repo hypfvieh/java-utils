@@ -51,7 +51,7 @@ public final class XmlUtil {
     /**
      * Shortcut for checking if given node is of type {@link Element}.
      *
-     * @param _node
+     * @param _node node
      * @return true if {@link Element}, false otherwise
      */
     public static boolean isElementType(Node _node) {
@@ -60,7 +60,7 @@ public final class XmlUtil {
 
     /**
      * Checks and converts given {@link Node} to {@link Element} if possible.
-     * @param _node
+     * @param _node node
      * @return {@link Element} or null if given {@link Node} is not {@link Element} subtype
      */
     public static Element toElement(Node _node) {
@@ -73,10 +73,10 @@ public final class XmlUtil {
     /**
      * Applys a xpathExpression to a xml-Document and return a {@link NodeList} with the results.
      *
-     * @param _xpathExpression
-     * @param _xmlDocumentOrNode
+     * @param _xpathExpression xpath expression
+     * @param _xmlDocumentOrNode document or node
      * @return {@link NodeList}
-     * @throws IOException
+     * @throws IOException on error
      */
     public static NodeList applyXpathExpressionToDocument(String _xpathExpression, Node _xmlDocumentOrNode)
             throws IOException {
@@ -103,11 +103,11 @@ public final class XmlUtil {
     /**
      * Read the given string as XML document.
      *
-     * @param _xmlStr
-     * @param _validating
-     * @param _namespaceAware
-     * @return
-     * @throws IOException
+     * @param _xmlStr xml string
+     * @param _validating boolean
+     * @param _namespaceAware boolean
+     * @return {@link org.w3c.dom.Document}
+     * @throws IOException on error
      */
     public static Document parseXmlString(String _xmlStr, boolean _validating, boolean _namespaceAware) throws IOException {
 
@@ -142,7 +142,7 @@ public final class XmlUtil {
 
     /**
      * Converts {@link NamedNodeMap} to a {@link LinkedHashMap}&lt;String,String&gt;.
-     * @param _nodeMap
+     * @param _nodeMap node map
      * @return {@link LinkedHashMap}, maybe empty but never null
      */
     public static Map<String, String> convertToAttributeMap(NamedNodeMap _nodeMap) {
@@ -162,7 +162,7 @@ public final class XmlUtil {
      * @param _namespaceAware take care of namespace
      * @param _errorHandler e.g. {@link XmlErrorHandlers.XmlErrorHandlerQuiet} or {@link XmlErrorHandlers.XmlErrorHandlerRuntimeException}
      * @return Document
-     * @throws IOException
+     * @throws IOException on error
      */
     public static Document parseXmlStringWithXsdValidation(String _xmlStr, boolean _namespaceAware, ErrorHandler _errorHandler) throws IOException  {
         if (_errorHandler == null) {
@@ -192,7 +192,7 @@ public final class XmlUtil {
      * @param _xmlStr string to validate
      * @param _namespaceAware take care of namespace
      * @return Document
-     * @throws IOException
+     * @throws IOException on error
      */
     public static Document parseXmlStringWithXsdValidation(String _xmlStr, boolean _namespaceAware) throws IOException  {
         return parseXmlStringWithXsdValidation(_xmlStr, _namespaceAware, null);
@@ -203,7 +203,7 @@ public final class XmlUtil {
      *
      * @param _docOrNode {@link Document} or {@link Node} object
      * @param _outStream {@link OutputStream} to print on
-     * @throws IOException
+     * @throws IOException on error
      */
     public static void printDocument(Node _docOrNode, OutputStream _outStream) throws IOException {
         if (_docOrNode == null || _outStream == null) {

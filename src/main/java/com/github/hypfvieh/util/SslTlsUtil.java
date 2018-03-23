@@ -39,9 +39,10 @@ public final class SslTlsUtil {
     /**
      * Initialization of trustStoreManager used to provide access to the configured trustStore.
      *
-     * @param _trustStoreFile
-     * @return
-     * @throws IOException
+     * @param _trustStoreFile trust store file
+     * @param _trustStorePassword trust store password
+     * @return TrustManager array or null
+     * @throws IOException on error
      */
     public static TrustManager[] initializeTrustManagers(File _trustStoreFile, String _trustStorePassword) throws IOException {
         if (_trustStoreFile == null) {
@@ -81,9 +82,11 @@ public final class SslTlsUtil {
     /**
      * Initialization of keyStoreManager used to provide access to the configured keyStore.
      *
-     * @param _keyStoreFile
-     * @return
-     * @throws IOException
+     * @param _keyStoreFile key store file
+     * @param _keyStorePassword key store password
+     * @param _keyPassword key password
+     * @return KeyManager array or null
+     * @throws IOException on error
      */
     public static KeyManager[] initializeKeyManagers(File _keyStoreFile, String _keyStorePassword, String _keyPassword) throws IOException {
         if (_keyStoreFile == null) {
@@ -122,8 +125,8 @@ public final class SslTlsUtil {
     /**
      * Get the key/trust store 'type' by analyzing the filename extension.
      *
-     * @param _filename
-     * @return
+     * @param _file file
+     * @return store type as string, defaults to JKS
      */
     public static String getStoreTypeByFileName(File _file) {
 

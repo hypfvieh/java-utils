@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public final class ComponentRegistry {
     /**
      * Packages to allow to register (package name or FQCN).
      *
-     * @param _str
+     * @param _str package name
      */
     public synchronized void addPackageToIncludeList(String _str) {
         if (_str == null) {
@@ -66,7 +67,7 @@ public final class ComponentRegistry {
     /**
      * Returns a list with all registered classes (FQCN).
      *
-     * @return
+     * @return list (maybe empty), never null
      */
     public synchronized List<String> getComponents() {
         List<String> compos = new ArrayList<>();
@@ -79,7 +80,7 @@ public final class ComponentRegistry {
     /**
      * Returns the list of registered Components and Versions as Map.
      *
-     * @return
+     * @return Map, never null
      */
     public synchronized Map<String, String> getComponentsVersions() {
         SortedMap<String, String> keys = new TreeMap<>(componentVersions);
@@ -89,8 +90,8 @@ public final class ComponentRegistry {
     /**
      * Return version for given Class. Returns null if class not in list.
      *
-     * @param _clazz
-     * @return
+     * @param _clazz class
+     * @return string or null
      */
     public synchronized String getVersionForComponent(Class<?> _clazz) {
         return componentVersions.get(_clazz.getName());
@@ -99,8 +100,8 @@ public final class ComponentRegistry {
     /**
      * Register a class with version.
      *
-     * @param _clazz
-     * @param _version
+     * @param _clazz class
+     * @param _version version
      */
     public synchronized void registerComponent(Class<?> _clazz, String _version) {
         componentVersions.put(_clazz.getName(), _version);
@@ -109,8 +110,8 @@ public final class ComponentRegistry {
     /**
      * Remove a registered class from list.
      *
-     * @param _clazz
-     * @return
+     * @param _clazz class
+     * @return true if component could be removed, false otherwise
      */
     public synchronized boolean unregisterComponent(Class<?> _clazz) {
         return null != componentVersions.remove(_clazz.getName());
@@ -119,8 +120,8 @@ public final class ComponentRegistry {
     /**
      * Remove a registered class from list.
      *
-     * @param _className
-     * @return
+     * @param _className fqcn string
+     * @return true if component could be removed, false otherwise
      */
     public synchronized boolean unregisterComponent(String _className) {
         return null != componentVersions.remove(_className);
@@ -128,8 +129,8 @@ public final class ComponentRegistry {
 
     /**
      * Check if the given FQCN matches to any given include pattern.
-     * @param _clazzName
-     * @return
+     * @param _clazzName class
+     * @return true if included, false otherwise
      */
     private synchronized boolean isIncluded(String _clazzName) {
         if (includes.size() > 0) {
@@ -145,7 +146,7 @@ public final class ComponentRegistry {
 
     /**
      * Register a class using the Class-Object.
-     * @param _clazz
+     * @param _clazz class
      */
     public synchronized void registerComponent(Class<?> _clazz) {
         if (_clazz == null) {
@@ -164,7 +165,7 @@ public final class ComponentRegistry {
     /**
      * Register a component with FQCN only. This method will try to get the class version using reflections!
      *
-     * @param _string
+     * @param _string fqcn
      */
     public synchronized void registerComponent(String _string) {
 
@@ -185,7 +186,7 @@ public final class ComponentRegistry {
     /**
      * Helper which tries to find (and call) the method 'getVersion()' using reflection.
      *
-     * @param dummy
+     * @param dummy whatever
      * @return value of getVersion() or null
      */
     private String getVersionWithReflection(Class<?> dummy) {

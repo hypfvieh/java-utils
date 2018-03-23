@@ -20,18 +20,18 @@ public class TimeMeasure {
 
     /** Formatter used for {@link #toString()} */
     private final ITimeMeasureFormat tmf;
-    
+
     /**
-     * Create a new instance using _ts millis as 
-     * @param _formatAsSecondsAfter
+     * Create a new instance using _ts millis as
+     * @param _formatter formatter to use for toString() call
      */
     public TimeMeasure(ITimeMeasureFormat _formatter) {
         tmf = _formatter;
         reset();
     }
-    
+
     /**
-     * Create a new instance, used a formatter converting everything >= 5000 ms to seconds (X.Y -> 6.1).
+     * Create a new instance, used a formatter converting everything &gt;= 5000 ms to seconds (X.Y -&gt; 6.1).
      */
     public TimeMeasure() {
         this(new ITimeMeasureFormat() {
@@ -73,7 +73,7 @@ public class TimeMeasure {
      *
      * The timezone of the given dateFormatter will always be set to 'UTC' to avoid any timezone related offsets.
      *
-     * @param _dateFormat
+     * @param _dateFormat date format
      * @return formatted string
      */
     public String getElapsedFormatted(DateFormat _dateFormat) {
@@ -105,7 +105,7 @@ public class TimeMeasure {
     void setStartTm(long _tm) {
         startTm = _tm;
     }
-    
+
     public long getElapsedAndReset() {
         long elapsed = getElapsed();
         reset();

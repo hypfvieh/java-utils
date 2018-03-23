@@ -26,8 +26,8 @@ public final class TypeUtil {
     /**
      * Returns true if string matches certain boolean values.
      *
-     * @param _str
-     * @return
+     * @param _str string to validate
+     * @return true if string represents a true (like 'yes','ja',1) value, false otherwise
      * @deprecated use {@link ConverterUtil#strToBool(String)}
      */
     @Deprecated
@@ -96,8 +96,8 @@ public final class TypeUtil {
     /**
      * Check if string is integer (including negative integers).
      *
-     * @param _str
-     * @return
+     * @param _str string to check
+     * @return true if integer (positive or negative), false otherwise
      */
     public static boolean isInteger(String _str) {
         return isInteger(_str, true);
@@ -106,9 +106,9 @@ public final class TypeUtil {
     /**
      * Check if string is an either positive or negative integer.
      *
-     * @param _str
+     * @param _str string to validate
      * @param _allowNegative negative integer allowed
-     * @return
+     * @return true if integer, false otherwise
      */
     public static boolean isInteger(String _str, boolean _allowNegative) {
         if (_str == null) {
@@ -126,9 +126,9 @@ public final class TypeUtil {
 
     /**
      * Check if the given value is a valid network port (1 - 65535).
-     * @param _port
+     * @param _port 'port' to check
      * @param _allowWellKnown allow ports below 1024 (aka reserved well known ports)
-     * @return
+     * @return true if int is a valid network port, false otherwise
      */
     public static boolean isValidNetworkPort(int _port, boolean _allowWellKnown) {
         if (_allowWellKnown) {
@@ -140,9 +140,9 @@ public final class TypeUtil {
 
     /**
      * @see #isValidNetworkPort(int, boolean)
-     * @param _str
-     * @param _allowWellKnown
-     * @return
+     * @param _str string to check
+     * @param _allowWellKnown allow well known port
+     * @return true if valid port, false otherwise
      */
     public static boolean isValidNetworkPort(String _str, boolean _allowWellKnown) {
         if (isInteger(_str, false)) {
@@ -154,7 +154,7 @@ public final class TypeUtil {
     /**
      * Checks if given String is a valid regular expression.
      *
-     * @param _regExStr
+     * @param _regExStr regex string to check
      * @return true if given string is valid regex, false otherwise
      */
     public static boolean isValidRegex(String _regExStr) {
@@ -164,7 +164,7 @@ public final class TypeUtil {
     /**
      * Creates a RegEx Pattern object, if given String is a valid regular expression.
      *
-     * @param _regExStr
+     * @param _regExStr regex string to check
      * @return Pattern-Object or null if given String is no valid RegEx
      */
     public static Pattern createRegExPatternIfValid(String _regExStr) {
@@ -232,6 +232,9 @@ public final class TypeUtil {
     }
 
     /**
+     * @param _errMsg error message
+     * @param _objects objects to check
+     * @see CompareUtil#throwIfAnyNull(String, Object...)
      * @deprecated Use {@link CompareUtil#throwIfAnyNull(String, Object...)}
      */
     @Deprecated
@@ -257,13 +260,13 @@ public final class TypeUtil {
     * Splits _map to a list of maps where each map has _nbElements.
     * Last map in list maybe shorter if _map.size() is not divideable by _nElements.
     *
-    * @param _map
-    * @param _nbElements
+    * @param _map map to split
+    * @param _nbElements elements per map
     * @param <K> key type
     * @param <V> value type
     * @return List of Maps
-    * @throws IllegalAccessException
-    * @throws InstantiationException
+    * @throws IllegalAccessException on error
+    * @throws InstantiationException on error
     */
    @SuppressWarnings("unchecked")
    public static <K, V> List<Map<K, V>> splitMap(Map<K, V> _map, int _nbElements) throws InstantiationException, IllegalAccessException  {
@@ -284,10 +287,10 @@ public final class TypeUtil {
     * Split a List into equal parts.
     * Last list could be shorter than _elements.
     *
-    * @param _list
-    * @param _elements
-    * @param <T>
-    * @return
+    * @param _list list to split
+    * @param _elements elements per list
+    * @param <T> type
+    * @return list of lists
     */
    public static <T> List<List<T>> splitList(List<T> _list, int _elements) {
        List<List<T>> partitions = new ArrayList<>();
@@ -321,9 +324,9 @@ public final class TypeUtil {
    /**
     * Returns integer converted from string or default if string could not be converted to int.
     *
-    * @param _possibleInt
-    * @param _default
-    * @return
+    * @param _possibleInt string to convert
+    * @param _default default to use if string cannot be converted
+    * @return int
     */
    public static int defaultIfNotInteger(String _possibleInt, int _default) {
        if (isInteger(_possibleInt)) {

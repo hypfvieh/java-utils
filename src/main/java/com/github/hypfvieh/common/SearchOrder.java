@@ -18,11 +18,11 @@ public enum SearchOrder {
     CLASS_PATH,
     /** Look in system path (e.g. /usr/lib on linux/unix systems) */
     SYSTEM_PATH;
-	
+
 	/**
      * Search for the given filename in given {@link SearchOrder}.
-     * @param _fileName
-     * @param _order
+     * @param _fileName filename
+     * @param _order order
      * @return InputStream of first found matching file or null if no file found
      */
     public static InputStream findFile(String _fileName, SearchOrder... _order) {
@@ -73,8 +73,8 @@ public enum SearchOrder {
 
     /**
      * Convert file to input stream if possible.
-     * @param _file
-     * @return
+     * @param _file file
+     * @return InputStream or null if file could not be found
      */
     private static InputStream toStream(File _file) {
         try {

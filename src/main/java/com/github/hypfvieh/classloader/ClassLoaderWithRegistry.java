@@ -59,7 +59,7 @@ public class ClassLoaderWithRegistry extends java.lang.ClassLoader {
     /**
      * Add a class which should not be loaded with this classloader even if it is in 'includedPackages' List.
      *
-     * @param _excludedClassName
+     * @param _excludedClassName fqcn to exclude
      */
     public void addExcludedClassName(String _excludedClassName) {
         if (!_excludedClassName.endsWith(".")) {

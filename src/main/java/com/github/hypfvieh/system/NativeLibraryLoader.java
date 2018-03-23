@@ -30,7 +30,7 @@ public final class NativeLibraryLoader {
 
     /**
      * Check if {@link NativeLibraryLoader} will is active and will load libraries.
-     * @return
+     * @return true if enabled, false otherwise
      */
     public static boolean isEnabled() {
         return INSTANCE.enabled;
@@ -38,7 +38,7 @@ public final class NativeLibraryLoader {
 
     /**
      * Enable/Disable library loading.
-     * @param _enabled
+     * @param _enabled enables/disable library loading
      */
     public static void setEnabled(boolean _enabled) {
         INSTANCE.enabled = _enabled;
@@ -48,6 +48,7 @@ public final class NativeLibraryLoader {
     /**
      * Load the given _libName from one of the given pathes (will search for the library and uses first match).
      *
+     * @param _trySystemLibsFirst use system pathes first
      * @param _libName library to load
      * @param _searchPathes pathes to search
      */
@@ -57,25 +58,29 @@ public final class NativeLibraryLoader {
         }
 
         List<SearchOrder> loadOrder = new ArrayList<>();
-        
+
         if (_trySystemLibsFirst) {
             loadOrder.add(SearchOrder.SYSTEM_PATH);
         }
-        
+
         loadOrder.add(SearchOrder.CUSTOM_PATH);
         loadOrder.add(SearchOrder.CLASS_PATH);
-        
+
         loadLibrary(_libName, loadOrder.toArray(new SearchOrder[] {}), _searchPathes);
     }
 
     /**
      * Tries to load the given library using the given load/search order.
+     *
+     * @param _libName library name
+     * @param _loadOrder load order
+     * @param _searchPathes search pathes
      */
     public static void loadLibrary(String _libName, SearchOrder[] _loadOrder, String... _searchPathes) {
         if (!isEnabled()) {
             return;
         }
-        
+
         for (SearchOrder order : _loadOrder) {
             if (INSTANCE.findProperNativeLib(order, _libName, _searchPathes) == null) {
                 return;
@@ -83,10 +88,10 @@ public final class NativeLibraryLoader {
         }
         throw new RuntimeException("Could not load library from any given source: " + Arrays.toString(_loadOrder));
     }
-    
+
     /**
      * Tries to load a library from the given search path, depending on given {@link SearchOrder} value.
-     * 
+     *
      * @param _order search order option
      * @param _libName name of the library
      * @param _searchPathes pathes to search for library
@@ -95,13 +100,13 @@ public final class NativeLibraryLoader {
     private Throwable findProperNativeLib(SearchOrder _order, String _libName, String[] _searchPathes) {
         String arch = System.getProperty("os.arch");
         Throwable lastErr = null;
-        
+
         if (_order == SearchOrder.SYSTEM_PATH) { // search in system pathes (e.g. content of LD_LIBRARY_PATH)
         	lastErr = loadSystemLib(_libName);
             if (lastErr == null) {
                 return null;
             }
-            
+
         } else if (_order == SearchOrder.CLASS_PATH) {
             for (String path : _searchPathes) {
                 // first, try with OS architecture in path name
@@ -111,7 +116,7 @@ public final class NativeLibraryLoader {
                 if (lastErr == null) {
                     return null;
                 } else { // then try without OS architecture in path name
-                    
+
                     fileNameWithPath = SystemUtil.concatFilePath(false, path, _libName);
                     libAsStream = NativeLibraryLoader.class.getClassLoader().getResourceAsStream(fileNameWithPath);
                     lastErr = loadFromStream(fileNameWithPath, libAsStream);
@@ -121,7 +126,7 @@ public final class NativeLibraryLoader {
                 }
             }
         } else { // search in custom pathes
-            
+
             for (String path : _searchPathes) {
                 File file = new File(SystemUtil.concatFilePath(false, path, arch, _libName));
                 if (!file.exists()) { // file not exists in file system, go to next entry
@@ -134,15 +139,15 @@ public final class NativeLibraryLoader {
             }
             lastErr = new IOException("No library in custom path found.");
         }
-        
+
         return lastErr;
     }
-    
+
     /**
      * Loads a library from the given stream, using the given filename (including path).
-     * 
-     * @param _fileNameWithPath
-     * @param _libAsStream
+     *
+     * @param _fileNameWithPath filename with path
+     * @param _libAsStream library is input stream
      * @return {@link Throwable} if any Exception/Error occurs, null otherwise
      */
     private Throwable loadFromStream(String _fileNameWithPath, InputStream _libAsStream) {
@@ -159,16 +164,16 @@ public final class NativeLibraryLoader {
         } catch (Exception _ex) {
             return _ex;
         }
-        
+
         return null;
     }
-   
+
     /**
      * Tries to load a library from the given path.
      * Will catches exceptions and return them to the caller.
      * Will return null if no exception has been thrown.
      *
-     * @param _lib
+     * @param _lib library
      * @return null on success, {@link Throwable} otherwise
      */
     private Throwable loadLib(String _lib) {
@@ -184,7 +189,7 @@ public final class NativeLibraryLoader {
      * Tries to load a library using System.loadLibrary.
      * This will also build different filename combinations based on the given filename
      * (without prefix like 'lib' and without suffix like '.so' or '.dll')
-     * @param _libName
+     * @param _libName library
      * @return null on success, {@link Throwable} otherwise
      */
     private Throwable loadSystemLib(String _libName) {
@@ -257,7 +262,7 @@ public final class NativeLibraryLoader {
      * Extracts the file extension (part behind last dot of a filename).
      * Only returns the extension, without the leading dot.
      *
-     * @param _fileName
+     * @param _fileName filename
      * @return extension, empty string if not dot was found in filename or null if given String was null
      */
     public static String getFileExtension(String _fileName) {
