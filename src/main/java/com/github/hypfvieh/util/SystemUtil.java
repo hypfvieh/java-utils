@@ -161,8 +161,8 @@ public final class SystemUtil {
 
     /**
      * Append a suffix to the string (e.g. filename) if it doesn't have it already.
-     * @param _str
-     * @param _suffix
+     * @param _str string to check
+     * @param _suffix suffix to append
      * @return string with suffix or original if no suffix was appended
      */
     public static String appendSuffixIfMissing(String _str, String _suffix) {
@@ -177,8 +177,8 @@ public final class SystemUtil {
 
     /**
      * Appends the OS specific path delimiter to the end of the String, if it is missing.
-     * @param _filePath
-     * @return
+     * @param _filePath file path
+     * @return String
      */
     public static String appendTrailingDelimiter(String _filePath) {
         if (_filePath == null) {
@@ -192,9 +192,9 @@ public final class SystemUtil {
 
     /**
      * Creates a new temporary directory in the given path.
-     * @param _path
-     * @param _name
-     * @param _deleteOnExit
+     * @param _path path
+     * @param _name directory name
+     * @param _deleteOnExit delete directory on jvm shutdown
      * @return created Directory, null if directory/file was already existing
      */
     public static File createTempDirectory(String _path, String _name, boolean _deleteOnExit) {
@@ -285,7 +285,7 @@ public final class SystemUtil {
      * Extracts the file extension (part behind last dot of a filename).
      * Only returns the extension, without the leading dot.
      *
-     * @param _file
+     * @param _file file
      * @return extension, empty string if no dot was found in filename or null if given String was null
      */
     public static String getFileExtension(File _file) {
@@ -297,9 +297,9 @@ public final class SystemUtil {
      *
      * Throws IOException or Subclass of it, if file is either non-existing, not a file or unreadable.
      *
-     * @param _file
+     * @param _file filename
      * @return file object, never null
-     * @throws IOException
+     * @throws IOException if file could not be read
      */
     public static File getFileIfReadable(String _file) throws IOException {
         if (StringUtil.isBlank(_file)) {
@@ -322,7 +322,7 @@ public final class SystemUtil {
     /**
      * Formats a file size given in byte to something human readable.
      *
-     * @param _bytes
+     * @param _bytes size in bytes
      * @param _use1000BytesPerMb use 1000 bytes per MByte instead of 1024
      * @return String
      */

@@ -28,7 +28,7 @@ public final class TypeUtil {
      *
      * @param _str
      * @return
-     * @deprecated use {@link ConverterUtilTest#strToBool(String)}
+     * @deprecated use {@link ConverterUtil#strToBool(String)}
      */
     @Deprecated
     public static boolean strToBool(String _str) {
