@@ -431,4 +431,37 @@ public final class SystemUtil {
         return normalizePath(_path, true);
     }
 
+    /**
+     * Checks if the running OS is a MacOS/MacOS X.
+     * @return true if MacOS (or MacOS X), false otherwise
+     */
+    public static boolean isMacOs() {
+        String osName = System.getProperty("os.name");
+        return osName == null ? false : osName.toLowerCase().startsWith("mac");
+    }
+
+    /**
+     * Tries to get the current version of MacOS/MacOS X.
+     * The version usually looks like '10.13.4', where the part behind the last dot represents the patchlevel.
+     * The major version in this case would be '10.13'.
+     * @return version without patchlevel or null
+     */
+    public static String getMacOsMajorVersion() {
+        if (!isMacOs()) {
+            return null;
+        }
+
+        String osVersion = System.getProperty("os.version");
+
+        if (osVersion != null) {
+            String[] split = osVersion.split("\\.");
+            if (split.length >= 2) {
+                return split[0] + "." + split[1];
+            } else {
+                return osVersion;
+            }
+        }
+
+        return null;
+    }
 }
