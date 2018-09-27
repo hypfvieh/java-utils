@@ -463,4 +463,103 @@ public final class StringUtil {
     public static boolean isAllUpperCase(String _str) {
         return isEmpty(_str) || !_str.matches(".*[a-z].*");
     }
+
+    /**
+     * Checks if any of the given strings in _args is contained in _str, case-insensitve.
+     * @param _str string to check
+     * @param _args patterns to find
+     * @return true if any string in _args is found in _str, false if not or _str/_args is null
+     */
+    public static boolean containsAnyIgnoreCase(String _str, String... _args) {
+        return containsAny(true, _str, _args);
+    }
+
+    /**
+     * Checks if any of the given strings in _args is contained in _str, case-sensitive.
+     *
+     * @param _str string to check
+     * @param _args patterns to find
+     * @return true if any string in _args is found in _str, false if not or _str/_args is null
+     */
+    public static boolean containsAny(String _str, String... _args) {
+       return containsAny(false, _str, _args);
+    }
+
+    /**
+     * Checks if any of the given strings in _args is contained in _str.
+     * @param _ignoreCase true to ignore case, false to be case sensitive
+     * @param _str string to check
+     * @param _args patterns to find
+     * @return true if any string in _args is found in _str, false if not or _str/_args is null
+     */
+    public static boolean containsAny(boolean _ignoreCase, String _str, String... _args) {
+        if (_str == null || _args == null || _args.length == 0) {
+            return false;
+        }
+        String heystack = _str;
+        if (_ignoreCase) {
+            heystack = _str.toLowerCase();
+        }
+
+        for (String s : _args) {
+            String needle = _ignoreCase ? s.toLowerCase() : s;
+            if (heystack.contains(needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if given string in _str ends with any of the given strings in _args.
+     * @param _ignoreCase true to ignore case, false to be case sensitive
+     * @param _str string to check
+     * @param _args patterns to find
+     * @return true if given string in _str ends with any of the given strings in _args, false if not or _str/_args is null
+     */
+    public static boolean endsWithAny(boolean _ignoreCase, String _str, String... _args) {
+        if (_str == null || _args == null || _args.length == 0) {
+            return false;
+        }
+        String heystack = _str;
+        if (_ignoreCase) {
+            heystack = _str.toLowerCase();
+        }
+
+        for (String s : _args) {
+            String needle = _ignoreCase ? s.toLowerCase() : s;
+            if (heystack.endsWith(needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks if given string in _str starts with any of the given strings in _args.
+     * @param _ignoreCase true to ignore case, false to be case sensitive
+     * @param _str string to check
+     * @param _args patterns to find
+     * @return true if given string in _str starts with any of the given strings in _args, false if not or _str/_args is null
+     */
+    public static boolean startsWithAny(boolean _ignoreCase, String _str, String... _args) {
+        if (_str == null || _args == null || _args.length == 0) {
+            return false;
+        }
+        String heystack = _str;
+        if (_ignoreCase) {
+            heystack = _str.toLowerCase();
+        }
+
+        for (String s : _args) {
+            String needle = _ignoreCase ? s.toLowerCase() : s;
+            if (heystack.startsWith(needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
