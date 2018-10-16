@@ -120,4 +120,46 @@ public class TypeUtilTest extends AbstractBaseUtilTest {
         assertNotNull(TypeUtil.createList());
         assertNotNull(TypeUtil.createList((Object[]) null));
     }
+
+    @Test
+    public void testSplitListToSubLists() throws Exception {
+        List<Integer> list = TypeUtil.createList(1,2,3,4,5,6,7,8,9,10);
+
+        List<List<Integer>> listOf2 = TypeUtil.splitListToSubLists(list, 2);
+        assertNotNull(listOf2);
+        assertEquals(2, listOf2.size());
+
+        assertCollection(listOf2.get(0), 1,2,3,4,5);
+        assertCollection(listOf2.get(1), 6,7,8,9,10);
+
+        List<List<Integer>> listOf5 = TypeUtil.splitListToSubLists(list, 5);
+        assertNotNull(listOf5);
+        assertEquals(5, listOf5.size());
+
+        assertCollection(listOf5.get(0), 1,2);
+        assertCollection(listOf5.get(1), 3,4);
+        assertCollection(listOf5.get(2), 5,6);
+        assertCollection(listOf5.get(3), 7,8);
+        assertCollection(listOf5.get(4), 9,10);
+
+        List<List<Integer>> listOf3 = TypeUtil.splitListToSubLists(list, 3);
+        assertNotNull(listOf3);
+        assertEquals(3, listOf3.size());
+
+        assertCollection(listOf3.get(0), 1,2,3);
+        assertCollection(listOf3.get(1), 4,5,6);
+        assertCollection(listOf3.get(2), 7,8,9,10);
+
+        list = TypeUtil.createList(1,2,3,4,5,6,7,8,9);
+
+        List<List<Integer>> list2Of9 = TypeUtil.splitListToSubLists(list, 2);
+        assertNotNull(list2Of9);
+        assertEquals(2, list2Of9.size());
+
+        assertCollection(list2Of9.get(0), 1,2,3,4);
+        assertCollection(list2Of9.get(1), 5,6,7,8,9);
+
+    }
+
+
 }

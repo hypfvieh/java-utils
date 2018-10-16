@@ -304,6 +304,42 @@ public final class TypeUtil {
 
 
    /**
+    * Splits a given list to _listCount subLists.
+    * Last list maybe shorter or longer than all previous list (depending on _list size).
+    *
+    * @param _list list to split
+    * @param _listCount sublists to create
+    * @return List of Lists, null if _list was null, empty list if _list was empty
+    */
+   public static <T> List<List<T>> splitListToSubLists(List<T> _list, int _listCount) {
+       if (_list == null) {
+           return null;
+       }
+
+       List<List<T>> results = new ArrayList<>();
+       if (_list.isEmpty()) {
+           results.add(_list);
+           return results;
+       }
+
+       int partPerList = _list.size() / _listCount;
+       int remainder = _list.size() % _listCount;
+
+       for (int i = 0; i < _list.size() -remainder; i+=partPerList) {
+           if (i+partPerList > _list.size()) {
+               i = _list.size();
+           }
+           results.add(new ArrayList<>(_list.subList(i, i+partPerList)));
+       }
+
+       for (int i = 0; i < remainder; i++) {
+           results.get(_listCount-1).add(_list.get(_list.size()-1-i));
+       }
+
+       return results;
+   }
+
+   /**
     * Factory method for {@link Properties} from an even-sized String array.
     * @param _keysAndVals String array of keys and values, may be null or even-numbered String array
     * @return new Properties object
