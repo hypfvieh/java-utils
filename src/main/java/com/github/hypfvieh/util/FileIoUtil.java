@@ -424,7 +424,7 @@ public final class FileIoUtil {
         if (_append) {
             File file = new File(_fileName);
             if (file.exists()) {
-                allText = readFileToString(file);
+                allText = readFileToString(file) + guessLineTerminatorOfFile(_fileName);
             }
         }
         allText += _fileContent;
