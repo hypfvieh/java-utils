@@ -285,11 +285,12 @@ public class FileIoUtilTest extends AbstractBaseUtilTest {
         file.deleteOnExit();
         List<String> readTextFileFromStream = FileIoUtil.readTextFileFromStream(new FileInputStream(file), Charset.defaultCharset(), true);
 
-        assertEquals(4, readTextFileFromStream.size());
+        assertEquals(5, readTextFileFromStream.size());
         assertEquals("Lirum Larum Loeffelstiel", readTextFileFromStream.get(0));
-        assertEquals("Lore Ipsum kann nicht vielThis is only a test", readTextFileFromStream.get(1));
-        assertEquals("With some lines", readTextFileFromStream.get(2));
-        assertEquals("in it.", readTextFileFromStream.get(3));
+        assertEquals("Lore Ipsum kann nicht viel", readTextFileFromStream.get(1));
+        assertEquals("This is only a test", readTextFileFromStream.get(2));
+        assertEquals("With some lines", readTextFileFromStream.get(3));
+        assertEquals("in it.", readTextFileFromStream.get(4));
 
         file.delete();
     }
