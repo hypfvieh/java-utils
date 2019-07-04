@@ -97,4 +97,33 @@ public class StringUtilTest extends AbstractBaseUtilTest {
         assertEquals("Hello", StringUtil.convertUpperToCamelCase("hello"));
         assertEquals("UserResponse", StringUtil.convertUpperToCamelCase("UserResponse"));
     }
+    
+    @Test
+    public void testRepeat() {
+        assertNull(StringUtil.repeat(null, 1));
+        assertNull(StringUtil.repeat(null, 0));
+        assertNull(StringUtil.repeat("*", 0));
+        assertNull(StringUtil.repeat("*", -1));
+        
+        assertEquals("***", StringUtil.repeat("*", 3));
+        assertEquals("xYxY", StringUtil.repeat("xY", 2));
+    }
+    
+    @Test
+    public void testMask() {
+        assertNull(StringUtil.mask(null, "x", 1, 1));
+        assertNull(StringUtil.mask("test", "", 1, 1));
+
+        assertEquals("test", StringUtil.mask("test", "x", 5, 1));
+        assertEquals("txxx", StringUtil.mask("test", "x", 1, 3));
+        
+        assertEquals("t*st", StringUtil.mask("test", "*", 1, 1));
+        assertEquals("t**t", StringUtil.mask("test", "*", 1, 2));
+
+        assertEquals("**st", StringUtil.mask("test", "*",0, 2));
+        assertEquals("***t", StringUtil.mask("test", "*",0, 3));
+        
+        // test mask length longer than string length
+        assertEquals("t***", StringUtil.mask("test", "*",1, 6));
+    }
 }

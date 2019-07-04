@@ -562,4 +562,73 @@ public final class StringUtil {
 
         return false;
     }
+    
+    /**
+     * Repeats the given string pattern for the given times.
+     * @param _str string to repeat
+     * @param _count number of repetitions
+     * @return repeated string or null if pattern was null or count was &lt;= 0
+     */
+    public static String repeat(String _str, int _count) {
+        if (_str == null || _count <= 0) {
+            return null;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < _count; i++) {
+            sb.append(_str);
+        }
+        return sb.toString();
+    }
+    
+    /**
+     * Mask the given string with the given pattern starting at given start and ending on given end of string.
+     * <br>
+     * If _str is null or _maskStr is null or empty, null is returned.<br>
+     * <br>
+     * If _maskBgn is lower than 0 or _maskLength is lower than 0 
+     * or _maskRpt minus _maskBgn is lower than 0, null is returned.<br>
+     * <br>
+     * If _maskBgn is bigger than the length of _str, the original String is returned.<br>
+     * If _maskRpt is bigger than the length of _str, length of _str is used.<br>
+     * 
+     * @param _str string to mask
+     * @param _maskStr mask to use
+     * @param _maskBgn offset to start at (0 based, inclusive)
+     * @param _maskRpt repetitions of _maskStr
+     * 
+     * @return masked String or null
+     */
+    public static String mask(String _str, String _maskStr, int _maskBgn, int _maskRpt) {
+        if (_str == null || _maskStr == null || _maskStr.isEmpty()) {
+            return null;
+        }
+
+        if (_maskBgn < 0 || _maskRpt <= 0 || _maskRpt - _maskBgn < 0) {
+            return _str;
+        }
+        
+        if (_maskBgn > _str.length()) {
+            return _str;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        int maskCnt = 0;
+        for (int i = 0; i < _str.length(); i++) {
+            if (i < _maskBgn) {
+                sb.append(_str.charAt(i));
+                continue;
+            }
+            if (maskCnt < _maskRpt) {
+                sb.append(_maskStr);
+                maskCnt++;
+            } else {
+                sb.append(_str.charAt(i));
+            }
+            
+        }
+        
+        return sb.toString();
+        
+    }
 }
