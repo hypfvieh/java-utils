@@ -126,4 +126,15 @@ public class StringUtilTest extends AbstractBaseUtilTest {
         // test mask length longer than string length
         assertEquals("t***", StringUtil.mask("test", "*",1, 6));
     }
+    
+    @Test
+    public void testSnakeToCamelCase() {
+        assertEquals("snakeCase", StringUtil.snakeToCamelCase("snake_case"));
+        assertEquals("longerSnakeCase", StringUtil.snakeToCamelCase("longer_snake_case"));
+        assertEquals("sneakySnakeCaseConversion", StringUtil.snakeToCamelCase("sneaky_snake_case_conversion"));
+        
+        assertEquals("snakeCase_1withDigit", StringUtil.snakeToCamelCase("snake_case_1with_digit"));
+        assertEquals("snakeCaseWithUpperSnake", StringUtil.snakeToCamelCase("snake_case_with_Upper_snake"));
+    }
 }
+

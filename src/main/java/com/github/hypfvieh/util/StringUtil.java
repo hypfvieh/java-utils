@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Random;
 
 /**
@@ -630,5 +632,34 @@ public final class StringUtil {
         
         return sb.toString();
         
+    }
+    
+    /**
+     * Converts a snake-case-string to camel case string.
+     * <br>
+     * Eg. this_is_snake_case &rarr; thisIsSnakeCase
+     * @param _input string
+     * @return camel case string or input if nothing todo. Returns null if input was null.
+     */
+    public static String snakeToCamelCase(String _input) {
+        if (isBlank(_input)) {
+            return _input;
+        }
+        
+        Pattern compile = Pattern.compile("_[a-zA-Z]");
+        Matcher matcher = compile.matcher(_input);
+        
+        String result = _input;
+                
+        while (matcher.find()) {
+            String match = matcher.group();
+            String replacement = match.replace("_", "");
+            replacement = replacement.toUpperCase();
+            
+            result = result.replaceFirst(match, replacement);
+            
+        }
+        
+        return result;
     }
 }
