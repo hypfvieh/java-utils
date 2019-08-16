@@ -127,27 +127,13 @@ public final class SystemUtil {
      * @return concatinated string
      */
     public static String concatFilePath(boolean _includeTrailingDelimiter, String..._parts) {
-        if (_parts == null) {
-            return null;
-        }
-        StringBuilder allParts = new StringBuilder();
-
-        for (int i = 0; i < _parts.length; i++) {
-            if (_parts[i] == null) {
-                continue;
-            }
-            allParts.append(_parts[i]);
-
-            if (!_parts[i].endsWith(File.separator)) {
-                allParts.append(File.separator);
-            }
+        String concatStrings = StringUtil.concatStrings(false, File.separator, _parts);
+        
+        if (_includeTrailingDelimiter && concatStrings.length() > 0) {
+            return concatStrings + File.separator;
         }
 
-        if (!_includeTrailingDelimiter && allParts.length() > 0) {
-            return allParts.substring(0, allParts.lastIndexOf(File.separator));
-        }
-
-        return allParts.toString();
+        return concatStrings;
     }
     /**
      * Concats a path from all given parts, using the path delimiter for the currently used platform.

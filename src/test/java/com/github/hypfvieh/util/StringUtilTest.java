@@ -136,5 +136,20 @@ public class StringUtilTest extends AbstractBaseUtilTest {
         assertEquals("snakeCase_1withDigit", StringUtil.snakeToCamelCase("snake_case_1with_digit"));
         assertEquals("snakeCaseWithUpperSnake", StringUtil.snakeToCamelCase("snake_case_with_Upper_snake"));
     }
+    
+    @Test
+    public void testConcatStrings() {
+        assertEquals("1, 2, 3", StringUtil.concatStrings(true, ", ", "1", "2", "3"));
+        assertEquals("1, 2, 3", StringUtil.concatStrings(false, ", ", "1", "2", "3"));
+
+        assertEquals("1, 3", StringUtil.concatStrings(true, ", ", "1", "", "3"));
+        assertEquals("1, , 3", StringUtil.concatStrings(false, ", ", "1", "", "3"));
+        assertEquals("1, 3", StringUtil.concatStrings(false, ", ", "1", null, "3"));
+
+        assertEquals("2, 3", StringUtil.concatStrings(true, ", ", "", "2", "3"));
+        assertEquals("2, 3", StringUtil.concatStrings(false, ", ", null, "2", "3"));
+        assertEquals(", 2, 3", StringUtil.concatStrings(false, ", ", "", "2", "3"));
+
+    }
 }
 

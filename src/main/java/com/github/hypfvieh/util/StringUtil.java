@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Random;
 
 /**
  * Utility class for String manipulation.
@@ -661,5 +661,40 @@ public final class StringUtil {
         }
         
         return result;
+    }
+    
+    /**
+     * Concats all strings using the separator as delimiter.
+     * Will exclude all null values and optionally ignore empty values.
+     * 
+     * @param _ignoreEmpty true to ignore empty strings
+     * @param _separator separator to add between each string
+     * @param _parts parts to concat
+     * 
+     * @return concatinated string, null if input is null
+     */
+    public static String concatStrings(boolean _ignoreEmpty, String _separator, String... _parts) {
+        if (_parts == null) {
+            return null;
+        }
+        
+        StringBuilder allParts = new StringBuilder();
+
+        for (int i = 0; i < _parts.length; i++) {
+            if (_parts[i] == null) {
+                continue;
+            }
+            
+            if (_ignoreEmpty && _parts[i].isEmpty()) {
+                continue;
+            }
+            allParts.append(_parts[i]);
+
+            if (!_parts[i].endsWith(_separator)) {
+                allParts.append(_separator);
+            }
+        }
+        
+        return allParts.toString().substring(0, allParts.lastIndexOf(_separator)); 
     }
 }
