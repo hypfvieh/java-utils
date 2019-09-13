@@ -694,6 +694,9 @@ public final class StringUtil {
                 allParts.append(_separator);
             }
         }
+        if (allParts.toString().isEmpty()) {
+            return "";
+        }
         
         return allParts.toString().substring(0, allParts.lastIndexOf(_separator)); 
     }
