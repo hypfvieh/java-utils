@@ -9,12 +9,16 @@ import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
 
 /**
  * Utility-Class with various operating system related helper methods.
@@ -449,4 +453,75 @@ public final class SystemUtil {
 
         return null;
     }
+
+    /**
+     * Delete all files and directories in the given path recursively.
+     *
+     * @param _fileOrDirectoryPath path to delete
+     * @param _stopOnError if true throw an exception and exit on any error
+     * @throws IOException if error occurs during deletion
+     */
+    public static void deleteRecursively(String _fileOrDirectoryPath, boolean _stopOnError) throws IOException {
+
+        if (_fileOrDirectoryPath == null || _fileOrDirectoryPath.isEmpty()) {
+            return;
+        }
+
+        File path = new File(_fileOrDirectoryPath);
+        if (!path.exists()) {
+            return;
+        }
+
+        List<File> filesToDelete = new ArrayList<>();
+        List<File> foldersToDelete = new ArrayList<>();
+
+        try (Stream<Path> walk = Files.walk(path.toPath())) {
+
+            walk.forEach(e -> {
+                if (e.toFile().isDirectory()) {
+                    foldersToDelete.add(e.toFile());
+                } else {
+                    filesToDelete.add(e.toFile());
+                }
+            });
+        } catch (IOException _ex) {
+            if (_stopOnError) {
+                throw _ex;
+            }
+        }
+
+        List<String> couldNotRemove = new ArrayList<>();
+        for (File file : filesToDelete) {
+            if (!file.delete()) {
+                if (_stopOnError) {
+                    throw new IOException("Could not delete file: " + file);
+                }
+                couldNotRemove.add(file.getAbsoluteFile().getParent());
+            }
+        }
+
+        for (File file : foldersToDelete) {
+            if (couldNotRemove.contains(file.getAbsoluteFile().getName())) {
+                continue;
+            } else {
+                if (!file.delete()) {
+                    if (_stopOnError) {
+                        throw new IOException("Could not delete directory: " + file);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Delete all files and directories in the given path recursively and without throwing any exception.
+     * @param _fileOrDirectoryPath file or directory to delete
+     */
+    public static void deleteRecursivelyQuiet(String _fileOrDirectoryPath) {
+        try {
+            deleteRecursively(_fileOrDirectoryPath, false);
+        } catch (IOException _ex) {
+        }
+    }
+
 }

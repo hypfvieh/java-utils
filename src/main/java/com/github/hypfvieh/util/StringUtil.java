@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -152,7 +153,7 @@ public final class StringUtil {
         if (_text == null) {
             return null;
         }
-        List<String> ret = new ArrayList<String>((_text.length() + _len - 1) / _len);
+        List<String> ret = new ArrayList<>((_text.length() + _len - 1) / _len);
 
         for (int start = 0; start < _text.length(); start += _len) {
             ret.add(_text.substring(start, Math.min(_text.length(), start + _len)));
@@ -564,7 +565,7 @@ public final class StringUtil {
 
         return false;
     }
-    
+
     /**
      * Repeats the given string pattern for the given times.
      * @param _str string to repeat
@@ -575,30 +576,122 @@ public final class StringUtil {
         if (_str == null || _count <= 0) {
             return null;
         }
-        
+
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < _count; i++) {
             sb.append(_str);
         }
         return sb.toString();
     }
-    
+
+    /**
+     * Right-pads a string with spaces (' ').<br>
+     * The String is padded to the size of {@code _size}.
+     *
+     * <pre>
+     * StringUtil.rightPad(null, *)   = null
+     * StringUtil.rightPad("", 3)     = "   "
+     * StringUtil.rightPad("bat", 3)  = "bat"
+     * StringUtil.rightPad("bat", 5)  = "bat  "
+     * StringUtil.rightPad("bat", 1)  = "bat"
+     * StringUtil.rightPad("bat", -1) = "bat"
+     * </pre>
+     *
+     * @param _str     the String to pad out, may be null
+     * @param _size    the size to pad to
+     * @param _padChar the padding character
+     * @return right-padded String or original String if no padding is necessary
+     */
+    public static String rightPad(String _str, int _size, String _padChar) {
+        if (_str == null) {
+            return null;
+        }
+        int pads = _size - _str.length();
+        if (pads <= 0) {
+            return _str;
+        }
+        return _str.concat(repeat(_padChar, pads));
+    }
+
+    /**
+     * Split a String by the given delimiting char.
+     * @param _str string to split
+     * @param _separatorChar delimiting char to use
+     * @return null if _str is null, array (maybe empty) otherwise
+     */
+    public static String[] split(String _str, char _separatorChar) {
+        return split(_str, Character.toString(_separatorChar));
+    }
+
+    /**
+     * Split a String by the given delimiting char.
+     * @param _str string to split
+     * @param _separatorStr delimiting String to use
+     * @return null if _str is null, array (maybe empty) otherwise
+     */
+    public static String[] split(String _str, String _separatorStr) {
+        if (_str == null) {
+            return null;
+        }
+        List<String> list = splitToList(_str, _separatorStr);
+        return list.toArray(new String[list.size()]);
+    }
+
+    /**
+     * Split string by whitespace.
+     * @param _str string to split
+     * @return null if _str is null, array (maybe empty) otherwise
+     */
+    public static String[] split(String _str) {
+        return split(_str, ' ');
+    }
+
+    /**
+     * Split given String using given delimiting char.
+     *
+     * @param _str string to split
+     * @param _separatorChar char to use as delimiter
+     * @return list of String tokens, null if _str is null or empty list
+     */
+    public static List<String> splitToList(String _str, char _separatorChar) {
+        return splitToList(_str, Character.toString(_separatorChar));
+    }
+
+    /**
+     * Split given String using the given delimiting string.
+     *
+     * @param _str string to split
+     * @param _separatorStr string to us as delimiter
+     * @return list of String tokens, null if _str is null or empty list
+     */
+    public static List<String> splitToList(String _str, String _separatorStr) {
+        if (_str == null) {
+            return null;
+        }
+        List<String> list = new ArrayList<>();
+        StringTokenizer st = new StringTokenizer(_str, _separatorStr);
+        while (st.hasMoreTokens()) {
+            list.add(st.nextToken());
+        }
+        return list;
+    }
+
     /**
      * Mask the given string with the given pattern starting at given start and ending on given end of string.
      * <br>
      * If _str is null or _maskStr is null or empty, null is returned.<br>
      * <br>
-     * If _maskBgn is lower than 0 or _maskLength is lower than 0 
+     * If _maskBgn is lower than 0 or _maskLength is lower than 0
      * or _maskRpt minus _maskBgn is lower than 0, null is returned.<br>
      * <br>
      * If _maskBgn is bigger than the length of _str, the original String is returned.<br>
      * If _maskRpt is bigger than the length of _str, length of _str is used.<br>
-     * 
+     *
      * @param _str string to mask
      * @param _maskStr mask to use
      * @param _maskBgn offset to start at (0 based, inclusive)
      * @param _maskRpt repetitions of _maskStr
-     * 
+     *
      * @return masked String or null
      */
     public static String mask(String _str, String _maskStr, int _maskBgn, int _maskRpt) {
@@ -609,11 +702,11 @@ public final class StringUtil {
         if (_maskBgn < 0 || _maskRpt <= 0 || _maskRpt - _maskBgn < 0) {
             return _str;
         }
-        
+
         if (_maskBgn > _str.length()) {
             return _str;
         }
-        
+
         StringBuilder sb = new StringBuilder();
         int maskCnt = 0;
         for (int i = 0; i < _str.length(); i++) {
@@ -627,13 +720,13 @@ public final class StringUtil {
             } else {
                 sb.append(_str.charAt(i));
             }
-            
+
         }
-        
+
         return sb.toString();
-        
+
     }
-    
+
     /**
      * Converts a snake-case-string to camel case string.
      * <br>
@@ -645,46 +738,46 @@ public final class StringUtil {
         if (isBlank(_input)) {
             return _input;
         }
-        
+
         Pattern compile = Pattern.compile("_[a-zA-Z]");
         Matcher matcher = compile.matcher(_input);
-        
+
         String result = _input;
-                
+
         while (matcher.find()) {
             String match = matcher.group();
             String replacement = match.replace("_", "");
             replacement = replacement.toUpperCase();
-            
+
             result = result.replaceFirst(match, replacement);
-            
+
         }
-        
+
         return result;
     }
-    
+
     /**
      * Concats all strings using the separator as delimiter.
      * Will exclude all null values and optionally ignore empty values.
-     * 
+     *
      * @param _ignoreEmpty true to ignore empty strings
      * @param _separator separator to add between each string
      * @param _parts parts to concat
-     * 
+     *
      * @return concatinated string, null if input is null
      */
     public static String concatStrings(boolean _ignoreEmpty, String _separator, String... _parts) {
         if (_parts == null) {
             return null;
         }
-        
+
         StringBuilder allParts = new StringBuilder();
 
         for (int i = 0; i < _parts.length; i++) {
             if (_parts[i] == null) {
                 continue;
             }
-            
+
             if (_ignoreEmpty && _parts[i].isEmpty()) {
                 continue;
             }
@@ -697,7 +790,7 @@ public final class StringUtil {
         if (allParts.toString().isEmpty()) {
             return "";
         }
-        
-        return allParts.toString().substring(0, allParts.lastIndexOf(_separator)); 
+
+        return allParts.toString().substring(0, allParts.lastIndexOf(_separator));
     }
 }
