@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-
-import org.slf4j.LoggerFactory;
+import java.lang.System.Logger.Level;
 
 /**
  * Defines where to look for a library.
@@ -80,7 +79,7 @@ public enum SearchOrder {
         try {
             return new FileInputStream(_file);
         } catch (FileNotFoundException _ex) {
-            LoggerFactory.getLogger(SearchOrder.class).debug("File {} not found", _file);
+            System.getLogger(SearchOrder.class.getName()).log(Level.DEBUG, "File {} not found", _file);
         }
         return null;
     }

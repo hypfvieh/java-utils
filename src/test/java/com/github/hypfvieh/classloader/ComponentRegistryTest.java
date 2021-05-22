@@ -3,7 +3,7 @@ package com.github.hypfvieh.classloader;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.AbstractBaseUtilTest;
 

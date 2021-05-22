@@ -3,6 +3,8 @@ package com.github.hypfvieh.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.CertificateFactory;
@@ -12,9 +14,6 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 
 /**
@@ -30,7 +29,7 @@ public final class SslTlsUtil {
     private static final String STORETYPE_PKCS12      = "pkcs12";
     private static final String STORETYPE_DER_ENCODED = "cer";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SslTlsUtil.class);
+    private static final Logger LOGGER = System.getLogger(SslTlsUtil.class.getName());
 
     private SslTlsUtil() {
 
@@ -58,7 +57,7 @@ public final class SslTlsUtil {
 
         String trustStorePwd = StringUtil.defaultIfBlank(_trustStorePassword, System.getProperty("javax.net.ssl.trustStorePassword"));
 
-        LOGGER.debug("Creating trust store of type '" + storeType + "' from " + (derEncoded ? "DER-encoded" : "") + " file '" + _trustStoreFile + "'");
+        LOGGER.log(Level.DEBUG, "Creating trust store of type '" + storeType + "' from " + (derEncoded ? "DER-encoded" : "") + " file '" + _trustStoreFile + "'");
 
         try {
             TrustManagerFactory trustMgrFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
@@ -104,7 +103,7 @@ public final class SslTlsUtil {
         }
 
         String storeType = getStoreTypeByFileName(_keyStoreFile);
-        LOGGER.debug("Creating key store of type '" + storeType + "' from file '" + _keyStoreFile + "'");
+        LOGGER.log(Level.DEBUG, "Creating key store of type '" + storeType + "' from file '" + _keyStoreFile + "'");
 
         try {
             KeyManagerFactory keyMgrFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());

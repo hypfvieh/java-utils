@@ -2,7 +2,7 @@ package com.github.hypfvieh.util;
 
 import java.io.File;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.AbstractBaseUtilTest;
 
@@ -34,9 +34,9 @@ public class SystemUtilTest extends AbstractBaseUtilTest {
         String tempDir = SystemUtil.getTempDir();
 
         assertNotNull(tempDir);
-        assertTrue("tmpdir " + tempDir + " does not end with file separator", tempDir.endsWith(System.getProperty("file.separator")));
-        assertTrue("tmpdir " + tempDir + " does not exist", new File(tempDir).exists());
-        assertTrue("tmpdir " + tempDir + " not a directory", new File(tempDir).isDirectory());
+        assertTrue(tempDir.endsWith(System.getProperty("file.separator")), "tmpdir " + tempDir + " does not end with file separator");
+        assertTrue(new File(tempDir).exists(), "tmpdir " + tempDir + " does not exist");
+        assertTrue(new File(tempDir).isDirectory(), "tmpdir " + tempDir + " not a directory");
         assertEquals(new File(tempDir), new File(System.getProperty("java.io.tmpdir")));
     }
 

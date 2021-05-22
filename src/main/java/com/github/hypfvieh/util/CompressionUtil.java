@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
@@ -15,9 +17,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Utility class for compressing/decompressing files.
@@ -30,7 +29,7 @@ public class CompressionUtil {
 	private CompressionUtil() {
 	}
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(CompressionUtil.class);
+	private static final Logger LOGGER = System.getLogger(CompressionUtil.class.getName());
 
 	/**
      * Extracts a GZIP compressed file to the given outputfile.
@@ -83,7 +82,7 @@ public class CompressionUtil {
 
             }
         } catch (IOException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException iOException) {
-            LOGGER.error("Cannot uncompress file: ", iOException);
+            LOGGER.log(Level.ERROR, "Cannot uncompress file: ", iOException);
         }
 
         return null;
@@ -126,7 +125,7 @@ public class CompressionUtil {
 	            }
         	}
         } catch (IOException | NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException _ex) {
-            LOGGER.error("Cannot uncompress file: ", _ex);
+            LOGGER.log(Level.ERROR, "Cannot uncompress file: ", _ex);
         }
         return null;
 

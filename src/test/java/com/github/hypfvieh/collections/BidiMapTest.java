@@ -2,7 +2,7 @@ package com.github.hypfvieh.collections;
 
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.AbstractBaseUtilTest;
 import com.github.hypfvieh.util.TypeUtil;
@@ -14,55 +14,59 @@ public class BidiMapTest extends AbstractBaseUtilTest {
     }
 
     public void testConstructor2() {
-        new BidiMap<String, String>(new java.util.HashMap<String, String>());
+        new BidiMap<>(new java.util.HashMap<String, String>());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGet1() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
-        bidiMap.get(null);
+        assertThrows(IllegalArgumentException.class, () -> {
+            BidiMap<String, String> bidiMap = new BidiMap<>();
+            bidiMap.get(null);
+        });
     }
 
     @Test
     public void testGetKey() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>(TypeUtil.createMap("K1", "V1"));
+        BidiMap<String, String> bidiMap = new BidiMap<>(TypeUtil.createMap("K1", "V1"));
         assertEquals("K1", bidiMap.getKey("V1"));
     }
 
     @Test
     public void testContainsValue() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>(TypeUtil.createMap("K1", "V1"));
+        BidiMap<String, String> bidiMap = new BidiMap<>(TypeUtil.createMap("K1", "V1"));
         assertTrue(bidiMap.containsValue("V1"));
     }
 
     @Test
     public void testKeySet() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
+        BidiMap<String, String> bidiMap = new BidiMap<>();
         assertTrue(bidiMap.keySet().getClass().getName().contains("UnmodifiableSet"));
     }
 
     @Test
     public void testValues() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
+        BidiMap<String, String> bidiMap = new BidiMap<>();
         assertTrue(bidiMap.values().getClass().getName().contains("UnmodifiableCollection"));
     }
 
     @Test
     public void testEntrySet() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
+        BidiMap<String, String> bidiMap = new BidiMap<>();
         assertTrue(bidiMap.entrySet().getClass().getName().contains("UnmodifiableSet"));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testRemove1() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
-        bidiMap.remove(null);
+        assertThrows(RuntimeException.class, () -> {
+            BidiMap<String, String> bidiMap = new BidiMap<>();
+            bidiMap.remove(null);
+        });
     }
 
     @Test
     public void testRemove2() {
         Map<String, String> map = TypeUtil.createMap("K1", "V1");
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>(map);
+        BidiMap<String, String> bidiMap = new BidiMap<>(map);
 
         String removed = bidiMap.remove("K1");
         assertEquals("V1", removed);
@@ -75,51 +79,59 @@ public class BidiMapTest extends AbstractBaseUtilTest {
         assertTrue(map.containsValue("V1"));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testRemoveValue1() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
-        bidiMap.removeValue(null);
+        assertThrows(RuntimeException.class, () -> {
+            BidiMap<String, String> bidiMap = new BidiMap<>();
+            bidiMap.removeValue(null);
+        });
     }
 
     @Test
     public void testRemoveValue2() {
         Map<String, String> map = TypeUtil.createMap("K1", "V1");
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>(map);
+        BidiMap<String, String> bidiMap = new BidiMap<>(map);
 
         bidiMap.removeValue("V1");
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testPutNull() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
-        bidiMap.put("K1", null);
+        assertThrows(RuntimeException.class, () -> {
+            BidiMap<String, String> bidiMap = new BidiMap<>();
+            bidiMap.put("K1", null);
+        });
     }
 
     @Test
     public void testPutAgain() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
+        BidiMap<String, String> bidiMap = new BidiMap<>();
         bidiMap.put("K1", "V1");
         bidiMap.put("K1", "V1");
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testPutKeysSameValue() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
-        bidiMap.put("K1", "V1");
-        bidiMap.put("K2", "V1");
+        assertThrows(RuntimeException.class, () -> {
+            BidiMap<String, String> bidiMap = new BidiMap<>();
+            bidiMap.put("K1", "V1");
+            bidiMap.put("K2", "V1");
+        });
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testPutValuesSameKey() {
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
-        bidiMap.put("K1", "V1");
-        bidiMap.put("K1", "V2");
+        assertThrows(RuntimeException.class, () -> {
+            BidiMap<String, String> bidiMap = new BidiMap<>();
+            bidiMap.put("K1", "V1");
+            bidiMap.put("K1", "V2");
+        });
     }
 
     @Test
     public void testPutAll() {
         Map<String, String> map = TypeUtil.createMap("K1", "V1", "K2", "V2", "K3", "V3");
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>();
+        BidiMap<String, String> bidiMap = new BidiMap<>();
         bidiMap.putAll(map);
 
         assertEquals(map.size(), bidiMap.size());
@@ -129,7 +141,7 @@ public class BidiMapTest extends AbstractBaseUtilTest {
     @Test
     public void testClear() {
         Map<String, String> map = TypeUtil.createMap("K1", "V1");
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>(map);
+        BidiMap<String, String> bidiMap = new BidiMap<>(map);
 
         assertEquals(1, map.size());
         assertEquals(1, bidiMap.size());
@@ -143,7 +155,7 @@ public class BidiMapTest extends AbstractBaseUtilTest {
     @Test
     public void testToString() {
         Map<String, String> map = TypeUtil.createMap("K1", "V1");
-        BidiMap<String, String> bidiMap = new BidiMap<String, String>(map);
+        BidiMap<String, String> bidiMap = new BidiMap<>(map);
         assertContains(bidiMap.toString(), map.toString());
     }
 
@@ -159,9 +171,9 @@ public class BidiMapTest extends AbstractBaseUtilTest {
         assertSame(java.util.TreeMap.class, treeMap.getClass());
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testCheckParms() {
-        BidiMap.checkParms((Object) null);
+        assertThrows(RuntimeException.class, () -> BidiMap.checkParms((Object) null));
     }
 
 }

@@ -3,18 +3,20 @@ package com.github.hypfvieh;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.lang.System.Logger;
+import java.lang.System.Logger.Level;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
-import org.junit.Rule;
-import org.junit.rules.TestName;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.TestInfo;
 
 import com.github.hypfvieh.util.StringUtil;
 
@@ -22,18 +24,59 @@ import com.github.hypfvieh.util.StringUtil;
  *
  * @author hypfvieh
  */
-public abstract class AbstractBaseUtilTest extends Assert {
-    @Rule
-    public TestName testName = new TestName();
+public abstract class AbstractBaseUtilTest extends Assertions {
 
-    @Rule
-    public TestRule watcher  = new TestWatcher() {
-                                 @Override
-                                 protected void starting(Description description) {
-                                     System.out.println("  [TEST]: " + description.getMethodName());
-                                 }
+    /** Instance logger. */
+    private Logger   logger;
 
-                             };
+    /** Holds information about the current test. */
+    private TestInfo lastTestInfo;
+
+    protected final Logger getLogger() {
+        if (null == logger) {
+            logger = System.getLogger(getClass().getName());
+        }
+        return logger;
+    }
+
+    protected final void setLogger(String _loggerName) {
+        logger = System.getLogger(Objects.requireNonNull(_loggerName, "Logger name required"));
+    }
+
+    @BeforeEach
+    public final void setTestMethodName(TestInfo _testInfo) {
+        lastTestInfo = _testInfo;
+    }
+
+    protected final String getTestMethodName() {
+        if (lastTestInfo != null && lastTestInfo.getTestClass().isPresent()) {
+            return lastTestInfo.getTestClass().get().getName() + '.' + lastTestInfo.getTestMethod().get().getName();
+        }
+        return null;
+    }
+
+    protected final String getShortTestMethodName() {
+        Optional<Method> testMethod = lastTestInfo == null ? Optional.empty() : lastTestInfo.getTestMethod();
+        return testMethod.map(Method::getName).orElse(null);
+    }
+
+    @BeforeEach
+    public final void logTestBegin(TestInfo _testInfo) {
+        logTestBeginEnd("BGN", _testInfo);
+    }
+
+    @AfterEach
+    public final void logTestEnd(TestInfo _testInfo) {
+        logTestBeginEnd("END", _testInfo);
+    }
+
+    protected void logTestBeginEnd(String _prefix, TestInfo _testInfo) {
+        if (!_testInfo.getTestMethod().isPresent() || _testInfo.getDisplayName().startsWith(_testInfo.getTestMethod().get().getName())) {
+            getLogger().log(Level.INFO, ">>>>>>>>>> {} Test: {} <<<<<<<<<<", _prefix, _testInfo.getDisplayName());
+        } else {
+            getLogger().log(Level.INFO, ">>>>>>>>>> {} Test: {} ({}) <<<<<<<<<<", _prefix, _testInfo.getTestMethod().get().getName(), _testInfo.getDisplayName());
+        }
+    }
 
     /**
      * Retrieves class name and method name at the specified stacktrace index.
@@ -75,34 +118,34 @@ public abstract class AbstractBaseUtilTest extends Assert {
     }
 
     public static void assertNotEquals(Object _obj1, Object _obj2) {
-        Assert.assertFalse("Parameters are equal: " + _obj1 + " = " + _obj2, Objects.equals(_obj1, _obj2));
+        assertFalse(Objects.equals(_obj1, _obj2), "Parameters are equal: " + _obj1 + " = " + _obj2);
     }
 
     public static void assertEmpty(String _string) {
-        Assert.assertTrue("String not empty.", _string != null ? _string.isEmpty() : false);
+        assertTrue(_string != null ? _string.isEmpty() : false, "String not empty.");
     }
 
     public static void assertNotEmpty(String _string) {
-        Assert.assertTrue("String is empty.", _string != null ? _string.isEmpty() : true);
+        assertTrue(_string != null ? _string.isEmpty() : true, "String is empty.");
     }
 
     public static void assertBlank(String _string) {
-        Assert.assertTrue("String not blank.", StringUtil.isBlank(_string));
+        assertTrue(StringUtil.isBlank(_string), "String not blank.");
     }
 
     public static void assertNotBlank(String _string) {
-        Assert.assertTrue("String is blank.", !StringUtil.isBlank(_string));
+        assertTrue(!StringUtil.isBlank(_string), "String is blank.");
     }
 
     public static void assertContains(String _string, String _contains) {
         if (_contains != null) {
-            Assert.assertTrue("String does not contain [" + _contains + "]: " + _string, _string != null ? _string.contains(_contains) : false);
+            assertTrue(_string != null ? _string.contains(_contains) : false, "String does not contain [" + _contains + "]: " + _string);
         }
     }
 
     public static void assertContainsNot(String _string, String _notContains) {
         if (_notContains != null) {
-            Assert.assertFalse("String contains [" + _notContains + "]: " + _string, _string != null ? _string.contains(_notContains) : true);
+            assertFalse(_string != null ? _string.contains(_notContains) : true, "String contains [" + _notContains + "]: " + _string);
         }
     }
 
@@ -120,7 +163,7 @@ public abstract class AbstractBaseUtilTest extends Assert {
         if (_ex != null) {
             message += " " + getExceptionAsString(_ex);
         }
-        Assert.fail(message);
+        fail(message);
     }
 
     public static void assertFail(String _message) {
@@ -147,11 +190,11 @@ public abstract class AbstractBaseUtilTest extends Assert {
      * @return the file object
      */
     private static File assertFileExists(File _file, boolean _exists) {
-        assertNotNull("File object is null.", _file);
+        assertNotNull(_file, "File object is null.");
         if (_exists) {
-            assertTrue("File [" + _file.getAbsolutePath() + "] does not exist.", _file.exists());
+            assertTrue(_file.exists(), "File [" + _file.getAbsolutePath() + "] does not exist.");
         } else {
-            assertTrue("File [" + _file.getAbsolutePath() + "] exists.", !_file.exists());
+            assertTrue(!_file.exists(), "File [" + _file.getAbsolutePath() + "] exists.");
         }
         return _file;
     }
@@ -182,10 +225,10 @@ public abstract class AbstractBaseUtilTest extends Assert {
      */
     @SafeVarargs
     public static final <K, V> Map<K, V> assertMap(Map<K, V> _map, K... _keys) {
-        assertNotNull("Map is null.", _map);
+        assertNotNull(_map, "Map is null.");
         if (_keys != null) {
             for (Object key : _keys) {
-                assertTrue("Key [" + key + "] not found in map: " + _map, _map.containsKey(key));
+                assertTrue(_map.containsKey(key), "Key [" + key + "] not found in map: " + _map);
             }
         }
         return _map;
@@ -200,8 +243,8 @@ public abstract class AbstractBaseUtilTest extends Assert {
      */
     @SafeVarargs
     public static final <V> Collection<V> assertCollection(Collection<V> _coll, V... _values) {
-        assertNotNull("Collection is null.", _coll);
-        Collection<V> notFound = new ArrayList<V>();
+        assertNotNull(_coll, "Collection is null.");
+        Collection<V> notFound = new ArrayList<>();
         if (_values != null) {
             for (V val : _values) {
                 if (!_coll.contains(val)) {
@@ -209,24 +252,24 @@ public abstract class AbstractBaseUtilTest extends Assert {
                 }
             }
         }
-        assertTrue("Values " + notFound + " not found in collection: " + _coll, notFound.size() == 0);
+        assertTrue(notFound.size() == 0, "Values " + notFound + " not found in collection: " + _coll);
         return _coll;
     }
 
     public static void assertInstanceOf(Object _obj, Class<?> _class) {
-        assertTrue(_obj + " is not an instance of " + _class + ".", _obj != null && _class != null && _class.isAssignableFrom(_obj.getClass()));
+        assertTrue(_obj != null && _class != null && _class.isAssignableFrom(_obj.getClass()), _obj + " is not an instance of " + _class + ".");
     }
 
     public static final void assertPatternFind(String _str, String _pattern) {
-        assertNotNull("String may not be null.", _str);
-        assertNotNull("Pattern may not be null.", _pattern);
-        assertTrue("Pattern [" + _pattern + "] not found in string [" + _str + "].", Pattern.compile(_pattern).matcher(_str).find());
+        assertNotNull(_str, "String may not be null.");
+        assertNotNull(_pattern, "Pattern may not be null.");
+        assertTrue(Pattern.compile(_pattern).matcher(_str).find(), "Pattern [" + _pattern + "] not found in string [" + _str + "].");
     }
 
     public static final void assertPatternMatches(String _str, String _pattern) {
-        assertNotNull("String may not be null.", _str);
-        assertNotNull("Pattern may not be null.", _pattern);
-        assertTrue("Pattern [" + _pattern + "] does not match string [" + _str + "].", Pattern.compile(_pattern).matcher(_str).matches());
+        assertNotNull(_str, "String may not be null.");
+        assertNotNull(_pattern, "Pattern may not be null.");
+        assertTrue(Pattern.compile(_pattern).matcher(_str).matches(), "Pattern [" + _pattern + "] does not match string [" + _str + "].");
     }
 
 }

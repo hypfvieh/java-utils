@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.AbstractBaseUtilTest;
 
@@ -34,7 +34,7 @@ public class ClassLoaderWithRegistryTest extends AbstractBaseUtilTest {
 
         Class<?> c = cls.loadClass(testClass);
 
-        Object o = c.newInstance();
+        Object o = c.getDeclaredConstructor().newInstance();
 
         Class<?>[] paramString = new Class[1];
         paramString[0] = List.class;

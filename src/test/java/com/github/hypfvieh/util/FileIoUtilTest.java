@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import com.github.hypfvieh.AbstractBaseUtilTest;
 import com.github.hypfvieh.common.SearchOrder;
@@ -205,9 +205,9 @@ public class FileIoUtilTest extends AbstractBaseUtilTest {
         assertEquals("More", loadPropertiesFromClasspath.getProperty("Even"));
     }
 
-    @Test(expected = IOException.class)
+    @Test
     public void testLoadPropertiesFromClassPathFail() throws IOException {
-        FileIoUtil.loadPropertiesFromClasspath("FileIoUtilTest/not_existing_readProperties.properties");
+        assertThrows(IOException.class, () -> FileIoUtil.loadPropertiesFromClasspath("FileIoUtilTest/not_existing_readProperties.properties"));
     }
 
     @Test
@@ -230,9 +230,9 @@ public class FileIoUtilTest extends AbstractBaseUtilTest {
         assertFalse(FileIoUtil.loadPropertiesFromClasspath("FileIoUtilTest/not_existing_readProperties.properties", properties));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testLoadPropertiesFromClassPathWithInputPropertiesIllegalInput() {
-        FileIoUtil.loadPropertiesFromClasspath("FileIoUtilTest/not_existing_readProperties.properties", null);
+        assertThrows(IllegalArgumentException.class, () -> FileIoUtil.loadPropertiesFromClasspath("FileIoUtilTest/not_existing_readProperties.properties", null));
     }
 
     @Test

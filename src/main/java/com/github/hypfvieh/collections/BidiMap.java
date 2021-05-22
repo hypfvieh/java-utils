@@ -156,9 +156,9 @@ public class BidiMap<K, V> implements Map<K, V> {
     static Map<?, ?> createMap(Map<?, ?> _map) {
         Map<?, ?> newMap;
         try {
-            newMap = _map.getClass().newInstance();
+            newMap = _map.getClass().getDeclaredConstructor().newInstance();
         } catch (Exception _ex) {
-            newMap = new LinkedHashMap<Object, Object>();
+            newMap = new LinkedHashMap<>();
         }
         return newMap;
     }

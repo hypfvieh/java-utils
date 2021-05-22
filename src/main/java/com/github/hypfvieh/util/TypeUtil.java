@@ -1,5 +1,6 @@
 package com.github.hypfvieh.util;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,15 +272,20 @@ public final class TypeUtil {
    @SuppressWarnings("unchecked")
    public static <K, V> List<Map<K, V>> splitMap(Map<K, V> _map, int _nbElements) throws InstantiationException, IllegalAccessException  {
        List<Map<K, V>> lofm = new ArrayList<>();
-       lofm.add(_map.getClass().newInstance());
-       for (Entry<K, V> e : _map.entrySet()) {
-           Map<K, V> lastSubMap = lofm.get(lofm.size() - 1);
-           if (lastSubMap.size() == _nbElements) {
-               lofm.add(_map.getClass().newInstance());
-               lastSubMap = lofm.get(lofm.size() - 1);
+       try {
+        lofm.add(_map.getClass().getDeclaredConstructor().newInstance());
+           for (Entry<K, V> e : _map.entrySet()) {
+               Map<K, V> lastSubMap = lofm.get(lofm.size() - 1);
+               if (lastSubMap.size() == _nbElements) {
+                   lofm.add(_map.getClass().getDeclaredConstructor().newInstance());
+                   lastSubMap = lofm.get(lofm.size() - 1);
+               }
+               lastSubMap.put(e.getKey(), e.getValue());
            }
-           lastSubMap.put(e.getKey(), e.getValue());
-       }
+    } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+            | NoSuchMethodException | SecurityException _ex) {
+        throw new InstantiationException(_ex.getMessage());
+    }
        return lofm;
    }
 
