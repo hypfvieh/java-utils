@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Config>
+	<Key1>Value1</Key1>
+	<Key2>
+		<SubKey1>SubValue1</SubKey1>
+	</Key2>
+	<Key3>
+		<SubKeyList>
+			<SubListEntry>SubListEntry1</SubListEntry>
+			<SubListEntry>SubListEntry2</SubListEntry>
+			<SubListEntry>SubListEntry3</SubListEntry>
+			<SubListEntry>SubListEntry3</SubListEntry>
+		</SubKeyList>
+	</Key3>
+	<Key4>
+		<NotInt>A</NotInt>
+		<Int>100</Int>
+	</Key4>
+	<Key5>
+		<NotBool>bla</NotBool>
+		<Bool>true</Bool>
+	</Key5>
+
+</Config>

@@ -139,6 +139,8 @@ public class FileIoUtilTest extends AbstractBaseUtilTest {
         Properties readProperties = FileIoUtil.readProperties(createTempFile);
         assertEquals("val1", readProperties.getProperty("key1"));
         assertEquals("val2", readProperties.getProperty("key2"));
+
+        createTempFile.delete();
     }
 
     @Test

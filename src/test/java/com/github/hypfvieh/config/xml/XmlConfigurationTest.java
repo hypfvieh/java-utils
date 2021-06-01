@@ -113,6 +113,7 @@ public class XmlConfigurationTest extends AbstractBaseUtilTest {
         readValue = xmlConfiguration.getString("Config/Key2/SubKey1");
         assertEquals("NewValue1", readValue);
 
+        tempFile.delete();
     }
 
     @Test
