@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
- 	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" 
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+          	
+     <modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.github.hypfvieh</groupId>
 	<artifactId>java-utils</artifactId>
@@ -14,6 +15,7 @@
 		<maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <junit.version>5.7.0</junit.version>
+        <log4j2.version>2.14.1</log4j2.version>
 	</properties>
 
 	<name>${project.artifactId}</name>
@@ -44,11 +46,41 @@
 					</archive>
 				</configuration>
 			</plugin>
+            <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M5</version>
+                    <configuration>
+                        <failIfNoTests>false</failIfNoTests>
+                        <trimStackTrace>false</trimStackTrace>
+                        <printSummary>true</printSummary>
+                        <testFailureIgnore>false</testFailureIgnore>
+
+                        <forkCount>1</forkCount>
+                        <reuseForks>true</reuseForks>
+                        <forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
+
+                    </configuration>
+                </plugin>            
 		</plugins>
 	</build>
 
 
 	<dependencies>
+        <!-- Logging (only for tests) -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j2.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jpl</artifactId>
+            <version>${log4j2.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+    
         <!-- Testing stuff -->
         <!-- JUnit testing framework. -->
         <dependency>
