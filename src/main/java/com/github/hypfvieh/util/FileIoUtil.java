@@ -36,7 +36,7 @@ public final class FileIoUtil {
      * @return Properties Object or null
      */
     public static Properties readProperties(File _file) {
-        if (_file.exists()) {
+        if (_file != null && _file.exists()) {
             try {
                 return readProperties(new FileInputStream(_file));
             } catch (FileNotFoundException _ex) {
