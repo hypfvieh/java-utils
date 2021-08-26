@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 /**
  * Utility class for String manipulation.
@@ -310,12 +311,12 @@ public final class StringUtil {
      * @param _str string to test
      * @return true if string is blank or null, false otherwise
      */
-    public static boolean isBlank(String _str) {
-        if (_str == null) {
+    public static boolean isBlank(CharSequence _str) {
+        if (_str == null || _str.length() == 0) {
             return true;
         }
 
-        return _str.trim().isEmpty();
+        return IntStream.range(0, _str.length()).allMatch(i -> Character.isWhitespace(_str.charAt(i)));
     }
 
     /**
@@ -330,12 +331,8 @@ public final class StringUtil {
      * @param _str string to test
      * @return true if string is empty or null, false otherwise
      */
-    public static boolean isEmpty(String _str) {
-        if (_str == null) {
-            return true;
-        }
-
-        return _str.isEmpty();
+    public static boolean isEmpty(CharSequence _str) {
+        return _str == null || _str.length() == 0;
     }
 
     /**
@@ -793,4 +790,47 @@ public final class StringUtil {
 
         return allParts.toString().substring(0, allParts.lastIndexOf(_separator));
     }
+
+    /**
+     * Checks that the specified string is not {@code blank}.
+     * This method is designed primarily for doing parameter validation in methods
+     * and constructors.
+     *
+     * @param _str the sequence to check for blankness
+     * @param _message exception message if check fails
+     * @return {@code _str} if not {@code blank}
+     * @throws IllegalArgumentException if {@code _str} is {@code blank}
+     */
+    public static <T extends CharSequence> T requireNonBlank(T _str, String _message) {
+        if (isBlank(_str)) {
+            throw new IllegalArgumentException(_message);
+        }
+        return _str;
+    }
+
+    public static <T extends CharSequence> T requireNonBlank(T _str) {
+        return requireNonBlank(_str, "String may not be blank");
+    }
+
+    /**
+     * Checks that the specified string is not {@code empty}.
+     * This method is designed primarily for doing parameter validation in methods
+     * and constructors.
+     *
+     * @param _str the sequence to check for emptiness
+     * @param _message exception message if check fails
+     * @return {@code _str} if not {@code empty}
+     * @throws IllegalArgumentException if {@code _str} is {@code empty}
+     */
+    public static <T extends CharSequence> T requireNonEmpty(T _str, String _message) {
+        if (isEmpty(_str)) {
+            throw new IllegalArgumentException(_message);
+        }
+        return _str;
+    }
+
+    public static <T extends CharSequence> T requireNonEmpty(T _str) {
+        return requireNonEmpty(_str, "String may not be empty");
+    }
+
 }
