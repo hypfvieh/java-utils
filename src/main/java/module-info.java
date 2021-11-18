@@ -1,4 +1,4 @@
-module hypfvieh.java.utils {
+module com.github.hypfvieh.java.utils {
     exports com.github.hypfvieh.collections;
     exports com.github.hypfvieh.system;
     exports com.github.hypfvieh.files;
