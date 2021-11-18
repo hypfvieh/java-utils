@@ -30,7 +30,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.1.2</version>
+				<version>3.2.0</version>
 				<executions>
 					<execution>
 						<goals>
@@ -39,10 +39,13 @@
 					</execution>
 				</executions>
 				<configuration>
-					<archive>
+					<archive combine.children="append">
 						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>                            
 						</manifest>
+                        <manifestEntries>
+                            <Automatic-Module-Name>hypfvieh.java.utils</Automatic-Module-Name>
+                        </manifestEntries>
 					</archive>
 				</configuration>
 			</plugin>
