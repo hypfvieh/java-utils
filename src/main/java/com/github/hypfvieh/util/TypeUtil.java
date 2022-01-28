@@ -19,6 +19,8 @@ import java.util.regex.PatternSyntaxException;
  */
 public final class TypeUtil {
 
+    private static final Pattern REGEX_IS_INT = Pattern.compile("^[0-9]+$");
+    private static final Pattern REGEX_IS_INT_NEGATIVE = Pattern.compile("^-?[0-9]+$");
 
     private TypeUtil() {
 
@@ -31,7 +33,7 @@ public final class TypeUtil {
      * @return true if string represents a true (like 'yes','ja',1) value, false otherwise
      * @deprecated use {@link ConverterUtil#strToBool(String)}
      */
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "2022-01-28")
     public static boolean strToBool(String _str) {
         return ConverterUtil.strToBool(_str);
     }
@@ -112,17 +114,13 @@ public final class TypeUtil {
      * @return true if integer, false otherwise
      */
     public static boolean isInteger(String _str, boolean _allowNegative) {
-        if (_str == null) {
+        if (_str == null || _str.isEmpty()) {
             return false;
         }
 
-        String regex = "[0-9]+$";
-        if (_allowNegative) {
-            regex = "^-?" + regex;
-        } else {
-            regex = "^" + regex;
-        }
-        return _str.matches(regex);
+        Pattern p = _allowNegative ? REGEX_IS_INT_NEGATIVE : REGEX_IS_INT;
+
+        return p.matcher(_str).matches();
     }
 
     /**
