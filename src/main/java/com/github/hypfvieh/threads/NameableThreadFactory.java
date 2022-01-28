@@ -25,8 +25,7 @@ public class NameableThreadFactory implements ThreadFactory {
      * @param _daemonizeThreads turn all created threads to daemon threads
      */
     public NameableThreadFactory(String _name, boolean _daemonizeThreads) {
-        SecurityManager s = System.getSecurityManager();
-        group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
+        group = Thread.currentThread().getThreadGroup();
         namePrefix = StringUtil.isBlank(_name) ? "UnnamedThreadPool-" + POOL_NUMBER.getAndIncrement() + "-thread-" : _name;
         daemonizeThreads = _daemonizeThreads;
     }
