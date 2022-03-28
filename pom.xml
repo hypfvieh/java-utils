@@ -10,6 +10,8 @@
 	<version>1.2.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
+    <url>https://github.com/hypfvieh/${project.artifactId}</url>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>5.8.1</junit.version>
@@ -25,6 +27,11 @@
 
 	<build>
 		<plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-site-plugin</artifactId>
+                <version>3.11.0</version>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
