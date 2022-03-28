@@ -171,5 +171,107 @@
 		<url>ssh://git@github.com/hypfvieh/java-utils.git</url>
 	</scm>
 
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://github.com/hypfvieh/${project.artifactId}/blob/master/LICENSE</url>
+        </license>
+    </licenses>
 
+    <developers>
+        <developer>
+            <id>hypfvieh</id>
+            <name>David M.</name>
+            <email>hypfvieh@googlemail.com</email>
+        </developer>
+    </developers>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+        <site>
+          <id>local</id>
+          <url>file://${java.io.tmpdir}/site-prepared</url>
+        </site>
+    </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>release</id>
+            <properties>
+                <gpg.executable>gpg2</gpg.executable>
+            </properties>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>3.0.0-M1</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <releaseProfiles>release</releaseProfiles>
+                            <goals>deploy</goals>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>3.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>3.2.0</version>
+                        <configuration>
+                             <doclint>none</doclint>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
