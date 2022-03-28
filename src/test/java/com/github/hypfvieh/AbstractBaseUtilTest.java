@@ -3,8 +3,6 @@ package com.github.hypfvieh;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,6 +15,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestInfo;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.util.StringUtil;
 
@@ -34,13 +34,13 @@ public abstract class AbstractBaseUtilTest extends Assertions {
 
     protected final Logger getLogger() {
         if (null == logger) {
-            logger = System.getLogger(getClass().getName());
+            logger = LoggerFactory.getLogger(getClass());
         }
         return logger;
     }
 
     protected final void setLogger(String _loggerName) {
-        logger = System.getLogger(Objects.requireNonNull(_loggerName, "Logger name required"));
+        logger = LoggerFactory.getLogger(Objects.requireNonNull(_loggerName, "Logger name required"));
     }
 
     @BeforeEach
@@ -72,9 +72,9 @@ public abstract class AbstractBaseUtilTest extends Assertions {
 
     protected void logTestBeginEnd(String _prefix, TestInfo _testInfo) {
         if (!_testInfo.getTestMethod().isPresent() || _testInfo.getDisplayName().startsWith(_testInfo.getTestMethod().get().getName())) {
-            getLogger().log(Level.INFO, ">>>>>>>>>> {} Test: {} <<<<<<<<<<", _prefix, _testInfo.getDisplayName());
+            getLogger().info(">>>>>>>>>> {} Test: {} <<<<<<<<<<", _prefix, _testInfo.getDisplayName());
         } else {
-            getLogger().log(Level.INFO, ">>>>>>>>>> {} Test: {} ({}) <<<<<<<<<<", _prefix, _testInfo.getTestMethod().get().getName(), _testInfo.getDisplayName());
+            getLogger().info(">>>>>>>>>> {} Test: {} ({}) <<<<<<<<<<", _prefix, _testInfo.getTestMethod().get().getName(), _testInfo.getDisplayName());
         }
     }
 

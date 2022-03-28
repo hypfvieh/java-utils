@@ -12,8 +12,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
         <junit.version>5.8.1</junit.version>
         <log4j2.version>2.17.2</log4j2.version>
 	</properties>
@@ -27,6 +25,34 @@
 
 	<build>
 		<plugins>
+            <plugin>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0-M3</version>
+                <executions>
+                    <execution>
+                        <id>enforce-versions</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <rules>
+                        <requireMavenVersion>
+                            <version>3.5.3</version>
+                        </requireMavenVersion>
+                    </rules>
+                </configuration>                
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <release>11</release>
+                </configuration>
+            </plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -121,9 +147,9 @@
 	</dependencies>
 
 	<scm>
-		<connection>scm:git:https://github.com/hypfvieh/java-utils.git</connection>
-		<developerConnection>scm:git:https://github.com/hypfvieh/java-utils.git</developerConnection>
-		<url>https://github.com/hypfvieh/java-utils.git</url>
+		<connection>scm:git:ssh://git@github.com/hypfvieh/java-utils.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/hypfvieh/java-utils.git</developerConnection>
+		<url>ssh://git@github.com/hypfvieh/java-utils.git</url>
 	</scm>
 
 

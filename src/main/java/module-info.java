@@ -29,8 +29,9 @@ module com.github.hypfvieh.java.utils {
 
     requires java.desktop;
     requires java.management;
-    requires org.slf4j;
-
+    
+    requires transitive org.slf4j;
+    
     requires transitive java.sql;
     requires transitive java.xml;
 }
