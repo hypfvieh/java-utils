@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.System.Logger.Level;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +20,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -511,7 +511,7 @@ public class XmlConfiguration {
         }
         if (System.getProperties().containsKey(_key)) {
             String sysProp = System.getProperties().getProperty(_key);
-            System.getLogger(getClass().getName()).log(Level.DEBUG, "Config-Property '{}' is overridden by environment variable, using value '{}'", _key, sysProp);
+            LoggerFactory.getLogger(getClass()).debug("Config-Property '{}' is overridden by environment variable, using value '{}'", _key, sysProp);
 
             return sysProp;
         }

@@ -10,14 +10,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.common.SearchOrder;
 
@@ -27,7 +28,7 @@ public final class FileIoUtil {
     private FileIoUtil() {
     }
 
-    private static final Logger LOGGER = System.getLogger(FileIoUtil.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileIoUtil.class);
 
     /**
      * Trys to read a properties file.
@@ -40,7 +41,7 @@ public final class FileIoUtil {
             try {
                 return readProperties(new FileInputStream(_file));
             } catch (FileNotFoundException _ex) {
-                LOGGER.log(Level.INFO, "Could not load properties file: " + _file, _ex);
+                LOGGER.info("Could not load properties file: " + _file, _ex);
             }
         }
         return null;
@@ -61,7 +62,7 @@ public final class FileIoUtil {
             props.load(_stream);
             return props;
         } catch (IOException | NumberFormatException _ex) {
-            LOGGER.log(Level.WARNING, "Could not properties: ", _ex);
+            LOGGER.warn("Could not properties: ", _ex);
         }
         return null;
     }
@@ -77,10 +78,10 @@ public final class FileIoUtil {
     public static Properties readPropertiesFromFile(String _fileName, Properties _props) {
         Properties props = _props == null ? new Properties() : _props;
 
-        LOGGER.log(Level.DEBUG, "Trying to read properties from file: " + _fileName);
+        LOGGER.debug("Trying to read properties from file: " + _fileName);
         Properties newProperties = readProperties(new File(_fileName));
         if (newProperties != null) {
-            LOGGER.log(Level.DEBUG, "Successfully read properties from file: " + _fileName);
+            LOGGER.debug("Successfully read properties from file: " + _fileName);
             props.putAll(newProperties);
         }
 
@@ -95,12 +96,12 @@ public final class FileIoUtil {
      * @return true on success, false otherwise
      */
     public static boolean writeProperties(File _file, Properties _props) {
-        LOGGER.log(Level.DEBUG, "Trying to write Properties to file: " + _file);
+        LOGGER.debug("Trying to write Properties to file: " + _file);
         try (FileOutputStream out = new FileOutputStream(_file)) {
             _props.store(out, _file.getName());
-            LOGGER.log(Level.DEBUG, "Successfully wrote properties to file: " + _file);
+            LOGGER.debug("Successfully wrote properties to file: " + _file);
         } catch (IOException _ex) {
-            LOGGER.log(Level.WARNING, "Could not save File: " + _file, _ex);
+            LOGGER.warn("Could not save File: " + _file, _ex);
             return false;
         }
         return true;
@@ -192,7 +193,7 @@ public final class FileIoUtil {
 
         } catch (IOException _ex) {
             if (!_silent) {
-                LOGGER.log(Level.WARNING, "Error while reading file:", _ex);
+                LOGGER.warn("Error while reading file:", _ex);
             }
         }
 
@@ -223,7 +224,7 @@ public final class FileIoUtil {
             return fileContent.size() > 0 ? fileContent : null;
         } catch (IOException _ex) {
             if (!_silent) {
-                LOGGER.log(Level.WARNING, "Error while reading file:", _ex);
+                LOGGER.warn("Error while reading file:", _ex);
             }
         }
 
@@ -281,7 +282,7 @@ public final class FileIoUtil {
      */
     public static String readStringFromResources(InputStream _stream, String _charset) {
         if (_stream == null) {
-            LOGGER.log(Level.ERROR, "Error: null-Stream received!");
+            LOGGER.error("Error: null-Stream received!");
             return null;
         }
 
@@ -294,7 +295,7 @@ public final class FileIoUtil {
                 sb.append((char) c);
             }
         } catch (IOException _ex) {
-            LOGGER.log(Level.ERROR, "Error while reading resource to string: ", _ex);
+            LOGGER.error("Error while reading resource to string: ", _ex);
         }
 
         return sb.toString();
@@ -391,7 +392,7 @@ public final class FileIoUtil {
                 return contents;
             } catch (IOException _ex) {
                 if (!_silent) {
-                    LOGGER.log(Level.ERROR, "Error while reading resource to string: ", _ex);
+                    LOGGER.error("Error while reading resource to string: ", _ex);
                 }
                 return null;
             }
@@ -433,7 +434,7 @@ public final class FileIoUtil {
             writer = new OutputStreamWriter(new FileOutputStream(_fileName), _charset);
             writer.write(allText);
         } catch (IOException _ex) {
-            LOGGER.log(Level.ERROR, "Could not write file to '" + _fileName + "'", _ex);
+            LOGGER.error("Could not write file to '" + _fileName + "'", _ex);
             return false;
         } finally {
             try {
@@ -441,7 +442,7 @@ public final class FileIoUtil {
                     writer.close();
                 }
             } catch (IOException _ex) {
-                LOGGER.log(Level.ERROR, "Error while closing file '" + _fileName + "'", _ex);
+                LOGGER.error("Error while closing file '" + _fileName + "'", _ex);
                 return false;
             }
         }

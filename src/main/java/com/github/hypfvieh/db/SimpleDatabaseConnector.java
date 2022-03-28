@@ -1,8 +1,6 @@
 package com.github.hypfvieh.db;
 
 import java.io.InvalidClassException;
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.Driver;
@@ -18,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.hypfvieh.util.StringUtil;
 import com.github.hypfvieh.util.TypeUtil;
@@ -69,7 +70,7 @@ public class SimpleDatabaseConnector {
             throw new IllegalArgumentException("Database connection parameters cannot be null.");
         }
 
-        logger = System.getLogger(getClass().getName());
+        logger = LoggerFactory.getLogger(getClass());
 
         dbOpen = false;
         connectionParams = _connectionParams;
@@ -91,7 +92,7 @@ public class SimpleDatabaseConnector {
      */
     public final synchronized boolean openDatabase() throws InvalidClassException, ClassNotFoundException {
         if (dbOpen) {
-            logger.log(Level.WARNING, "Connection to database already opened.");
+            logger.warn("Connection to database already opened.");
             return dbOpen;
         }
         Class<?> driverClazz;
@@ -99,12 +100,12 @@ public class SimpleDatabaseConnector {
             driverClazz = Class.forName(connectionParams.getDriverClassName());
             Object driverInstance = driverClazz.getDeclaredConstructor().newInstance();
             if (!(driverInstance instanceof Driver)) {
-                logger.log(Level.ERROR, "{} does not implement java.sql.Driver interface!", connectionParams.getDriverClassName());
+                logger.error("{} does not implement java.sql.Driver interface!", connectionParams.getDriverClassName());
                 throw new InvalidClassException(connectionParams.getDriverClassName() + " does not implement java.sql.Driver interface!");
             }
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException _ex) {
-            logger.log(Level.ERROR, "Cannot instanciate database driver: " + connectionParams.getDriverClassName(), _ex);
+            logger.error("Cannot instanciate database driver: " + connectionParams.getDriverClassName(), _ex);
         }
 
         // open the connection or switch to offline mode if connection fails
@@ -117,7 +118,7 @@ public class SimpleDatabaseConnector {
                     supportsBatch = true;
                 }
             } catch (SQLException _ex) {
-                logger.log(Level.INFO, "Could not determine if database supports batch update feature.", _ex);
+                logger.info("Could not determine if database supports batch update feature.", _ex);
             }
         }
 
@@ -133,18 +134,18 @@ public class SimpleDatabaseConnector {
         try {
             dbConnection = DriverManager.getConnection(connectionParams.getUrl(), connectionParams.getUser(), connectionParams.getPassword());
             dbOpen = true;
-            logger.log(Level.DEBUG, "Connection to database at: {} established", connectionParams.getUrl());
+            logger.debug("Connection to database at: {} established", connectionParams.getUrl());
         } catch (SQLRecoverableException _ex) { // is thrown if connection could not be established, so we may retry connection
             if (connectionRetries.incrementAndGet() > connectionParams.getMaxRetries()) {
-                logger.log(Level.ERROR, "Connection could not be established within {} attempts, url={}", connectionParams.getMaxRetries(), connectionParams.getUrl());
+                logger.error("Connection could not be established within {} attempts, url={}", connectionParams.getMaxRetries(), connectionParams.getUrl());
             } else {
-                logger.log(Level.ERROR, "Connection could not be established. Reconnection attempt #{} of {}, url={}, exception={}", connectionRetries.get(), connectionParams.getMaxRetries(), connectionParams.getUrl(), _ex.getMessage());
+                logger.error("Connection could not be established. Reconnection attempt #{} of {}, url={}, exception={}", connectionRetries.get(), connectionParams.getMaxRetries(), connectionParams.getUrl(), _ex.getMessage());
                 openConnection();
             }
         } catch (SQLException _ex) {
-            logger.log(Level.ERROR, "Database at [{}] could not be opened and offline cache was disabled.", connectionParams.getUrl());
+            logger.error("Database at [{}] could not be opened and offline cache was disabled.", connectionParams.getUrl());
             // if debug logging is enabled, print exception as well (may help analyzing issues)
-            logger.log(Level.DEBUG, "Exception was: ", _ex);
+            logger.debug("Exception was: ", _ex);
         }
     }
 
@@ -184,14 +185,14 @@ public class SimpleDatabaseConnector {
      */
     public synchronized boolean executeBatchQuery(String _sqlQuery, List<Object[]> _sqlParameters, int _batchSize) {
         if (dbConnection == null) {
-            logger.log(Level.ERROR, "Database connection for [{}] not established yet", connectionParams);
+            logger.error("Database connection for [{}] not established yet", connectionParams);
             return false;
         }
 
         if (_sqlParameters == null || _sqlParameters.isEmpty()) {
             return false;
         } else if (isSupportsBatch()) {
-            logger.log(Level.DEBUG, "About to perform {} updates with batch size {}.", _sqlParameters.size(), _batchSize);
+            logger.debug("About to perform {} updates with batch size {}.", _sqlParameters.size(), _batchSize);
             List<List<Object[]>> splitList = TypeUtil.splitList(_sqlParameters, _batchSize);
             boolean hasError = false;
             try {
@@ -209,27 +210,27 @@ public class SimpleDatabaseConnector {
                         int[] numUpdates = stmt.executeBatch();
                         for (int i = 0; i < numUpdates.length; i++) {
                             if (numUpdates[i] == Statement.SUCCESS_NO_INFO) {
-                                logger.log(Level.TRACE, "Execution of batch {}: successful, but unknown number of rows affected", i);
+                                logger.trace("Execution of batch {}: successful, but unknown number of rows affected", i);
                             } else if (numUpdates[i] == Statement.EXECUTE_FAILED) {
-                                logger.log(Level.ERROR, "Execution of batch {}/{} failed, parms: {}", i, numUpdates.length, Arrays.toString(batchPart.get(i)));
+                                logger.error("Execution of batch {}/{} failed, parms: {}", i, numUpdates.length, Arrays.toString(batchPart.get(i)));
                                 hasError = true;
                             } else {
-                                logger.log(Level.TRACE, "Execution of batch {} successful.", i);
+                                logger.trace("Execution of batch {} successful.", i);
                             }
                         }
                     }
                 }
                 return !hasError;
             } catch (SQLException _ex) {
-                logger.log(Level.ERROR, "Error while processing batch.",_ex);
+                logger.error("Error while processing batch.",_ex);
                 return false;
             }
         } else {
-            logger.log(Level.WARNING, "Using serial insert/update as database implementation does not support batch update!");
+            logger.warn("Using serial insert/update as database implementation does not support batch update!");
             boolean hasError = false;
             for (Object[] args : _sqlParameters) {
-                if (logger.isLoggable(Level.DEBUG)) { // do not do conversion of array to list if logging is disabled
-                    logger.log(Level.DEBUG, "Executing query {} with arguments: {}", _sqlQuery, Arrays.asList(args));
+                if (logger.isDebugEnabled()) { // do not do conversion of array to list if logging is disabled
+                    logger.debug("Executing query {} with arguments: {}", _sqlQuery, Arrays.asList(args));
                 }
                 if (!executeQuery(_sqlQuery, args)) {
                     hasError = true;
@@ -248,7 +249,7 @@ public class SimpleDatabaseConnector {
      */
     public synchronized boolean executeQuery(String _sql, Object... _args) {
         if (dbConnection == null) {
-            logger.log(Level.ERROR, "Database connection for [{}] not established yet", connectionParams);
+            logger.error("Database connection for [{}] not established yet", connectionParams);
             return false;
         }
 
@@ -260,7 +261,7 @@ public class SimpleDatabaseConnector {
             }
             return !ps.execute();
         } catch (SQLException _ex) {
-            logger.log(Level.ERROR, "Failed to execute sql statement: " + _sql, _ex);
+            logger.error("Failed to execute sql statement: " + _sql, _ex);
         }
         return false;
     }
@@ -274,7 +275,7 @@ public class SimpleDatabaseConnector {
      */
     public synchronized List<Map<String, String>> executeSelectQuery(String _sql, Object... _args) {
         if (dbConnection == null) {
-            logger.log(Level.ERROR, "Database connection for [{}] not established yet", connectionParams);
+            logger.error("Database connection for [{}] not established yet", connectionParams);
             return null;
         }
 
@@ -297,10 +298,10 @@ public class SimpleDatabaseConnector {
                 }
             }
         } catch (SQLException _ex) {
-            logger.log(Level.ERROR, "Failed to execute sql statement: " + _sql, _ex);
+            logger.error("Failed to execute sql statement: " + _sql, _ex);
         }
 
-        logger.log(Level.DEBUG, "Query: '{}' returned {} rows with parms: {}", _sql, queryResult.size(), Arrays.toString(_args));
+        logger.debug("Query: '{}' returned {} rows with parms: {}", _sql, queryResult.size(), Arrays.toString(_args));
 
         return queryResult;
 
@@ -313,11 +314,11 @@ public class SimpleDatabaseConnector {
      */
     public synchronized PreparedStatement createPreparedStatement(String _sql) {
         if (dbConnection == null || !isDbOpen()) {
-            logger.log(Level.ERROR, "Could not create prepared statement: database connection missing for [{}]", connectionParams);
+            logger.error("Could not create prepared statement: database connection missing for [{}]", connectionParams);
             return null;
         }
         if (StringUtil.isBlank(_sql)) {
-            logger.log(Level.ERROR, "Could not create prepared statement: statement cannot be empty or null");
+            logger.error("Could not create prepared statement: statement cannot be empty or null");
             return null;
         }
 
@@ -325,7 +326,7 @@ public class SimpleDatabaseConnector {
         try {
             ps = dbConnection.prepareStatement(_sql);
         } catch (SQLException _ex) {
-            logger.log(Level.ERROR, "Could not create prepared statement: ", _ex);
+            logger.error("Could not create prepared statement: ", _ex);
             return null;
         }
 
@@ -339,18 +340,18 @@ public class SimpleDatabaseConnector {
      */
     public synchronized boolean executeQuery(PreparedStatement _ps) {
         if (dbConnection == null) {
-            logger.log(Level.ERROR, "Database connection for [{}] not established yet", connectionParams);
+            logger.error("Database connection for [{}] not established yet", connectionParams);
             return false;
         }
         if (_ps == null) {
-            logger.log(Level.ERROR, "Statement should not be null!");
+            logger.error("Statement should not be null!");
             return false;
         }
 
         try {
             return !_ps.execute();
         } catch (SQLException _ex) {
-            logger.log(Level.ERROR, "Failed to execute sql statement:", _ex);
+            logger.error("Failed to execute sql statement:", _ex);
             return false;
         }
     }

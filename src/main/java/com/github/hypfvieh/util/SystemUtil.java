@@ -3,8 +3,6 @@ package com.github.hypfvieh.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.nio.file.AccessDeniedException;
@@ -20,6 +18,9 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Utility-Class with various operating system related helper methods.
  *
@@ -28,7 +29,7 @@ import java.util.stream.Stream;
  */
 public final class SystemUtil {
 
-    private static final Logger LOGGER = System.getLogger(SystemUtil.class.getName());
+    private static final Logger LOGGER = LoggerFactory.getLogger(SystemUtil.class);
 
     /** List of known terminal emulators on linux/unix systems. */
     private static final String[] TERMINAL_EMULATORS = new String[]
@@ -193,7 +194,7 @@ public final class SystemUtil {
             try {
                 Files.createDirectory(Paths.get(outputDir.toString()));
             } catch (IOException _ex) {
-                LOGGER.log(Level.ERROR, "Error while creating temp directory: ", _ex);
+                LOGGER.error("Error while creating temp directory", _ex);
             }
         } else {
             return null;

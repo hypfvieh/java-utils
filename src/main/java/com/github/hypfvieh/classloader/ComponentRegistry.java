@@ -1,7 +1,5 @@
 package com.github.hypfvieh.classloader;
 
-import java.lang.System.Logger;
-import java.lang.System.Logger.Level;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -10,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singleton which holds a list of registered classes.
@@ -21,7 +22,7 @@ public final class ComponentRegistry {
     private static ComponentRegistry instance = null;
 
     // we need a specified logger here, otherwise we cannot register SimpleLogger to ComponentRegistry!
-    private final Logger logger = System.getLogger(ComponentRegistry.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(ComponentRegistry.class);
 
     private final Map<String, String> componentVersions = new TreeMap<>();
 
@@ -177,7 +178,7 @@ public final class ComponentRegistry {
                     componentVersions.put(_string, classVersion);
                 }
             } catch (ClassNotFoundException ex) {
-                logger.log(Level.TRACE, "Unable to call getVersion on " + _string);
+                logger.trace("Unable to call getVersion on {}", _string);
             }
         }
     }
@@ -215,7 +216,7 @@ public final class ComponentRegistry {
                     }
                     return null;
                 } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    logger.log(Level.TRACE, "Unable to call getVersion on " + dummy.getName());
+                    logger.trace("Unable to call getVersion on {}", dummy.getName());
                 }
             }
         } catch (SecurityException _ex) {
