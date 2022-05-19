@@ -374,4 +374,19 @@ public final class TypeUtil {
        }
        return _default;
    }
+
+   /**
+    * Returns the default if value is null or value if value is not null.
+    *
+    * @param <T> type to check/return
+    * @param _val value to check for <code>null</code>
+    * @param _default default to use when value is null
+    *
+    * @return value or default
+    * @since 1.2.1 - 2022-05-19
+    */
+   public static <T> T defaultIfNull(T _val, T _default) {
+       return _val == null ? _default : _val;
+   }
+
 }
