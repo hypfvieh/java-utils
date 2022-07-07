@@ -1,5 +1,10 @@
 package com.github.hypfvieh.util;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.Map;
 import java.util.Properties;
 
@@ -62,4 +67,44 @@ public final class ConverterUtil {
         props.putAll(_map);
         return props;
     }
+
+    /**
+     * Converts a {@link java.util.Date} to a {@link LocalDateTime} using the default timezone.
+     *
+     * @param _date date to convert
+     * @return LocalDateTime or null if input null
+     */
+    public static LocalDateTime toLocalDateTime(Date _date) {
+        if (_date == null) {
+            return null;
+        }
+        return _date.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+    }
+
+    /**
+     * Converts a {@link java.util.Date} to a {@link LocalDate} using the default timezone.
+     *
+     * @param _date date to convert
+     * @return LocalDate or null if input null
+     */
+    public static LocalDate toLocalDate(Date _date) {
+        if (_date == null) {
+            return null;
+        }
+        return _date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
+
+    /**
+     * Converts a {@link java.util.Date} to a {@link LocalTime} using the default timezone.
+     *
+     * @param _date date to convert
+     * @return LocalTime or null if input null
+     */
+    public static LocalTime toLocalTime(Date _date) {
+        if (_date == null) {
+            return null;
+        }
+        return _date.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+    }
+
 }
