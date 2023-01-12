@@ -248,6 +248,32 @@ public final class ReflectionUtil {
     }
 
     /**
+     * Tries to create a new instance of the given class type using reflection.
+     * <p>
+     * It is assumed that there is a visible (public) no argument constructor.
+     * If instantiation fails, <code>null</code> is returned (exceptions are ignored).
+     * </p>
+     *
+     * @since v1.2.1 - 2023-01-10
+     *
+     * @param <T> type
+     * @param _clz class to instantiate
+     *
+     * @return new instance or null
+     *
+     */
+    public static <T> T createInstance(Class<T> _clz) {
+        if (_clz == null) {
+            return null;
+        }
+        try {
+            return _clz.getDeclaredConstructor().newInstance();
+        } catch (Exception _ex) {
+            return null;
+        }
+    }
+
+    /**
      * Extract all {@link Field}s or {@link Method}s which are static and do not match any of the given ignore names.
      *
      * @since v1.0.2 - 2018-04-20
