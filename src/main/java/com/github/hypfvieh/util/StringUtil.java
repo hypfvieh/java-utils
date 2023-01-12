@@ -362,6 +362,17 @@ public final class StringUtil {
         return new String(buf);
     }
 
+
+    /**
+     * Removes trailing and leading spaces / non-printable characters (char &lt;= 32).
+     *
+     * @param _str String to trim
+     * @return trimmed string or {@code null} if null input
+     */
+    public static String trim(String _str) {
+        return _str == null ? null : _str.trim();
+    }
+
     /**
      * Combines the Strings in _string using _delimiter.
      * @param _delimiter delimiting string
