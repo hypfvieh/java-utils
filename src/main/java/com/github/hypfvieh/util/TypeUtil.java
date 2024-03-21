@@ -389,4 +389,29 @@ public final class TypeUtil {
        return _val == null ? _default : _val;
    }
 
+   /**
+    * Retrieves the position of a byte array in another byte array.
+    *
+    * @param _heyStackArray array to search
+    * @param _needleArray array to find
+    *
+    * @return position of found array or -1 if not found
+    * @since 1.2.1 - 2024-03-21
+    */
+   public static int indexOfByteArray(byte[] _heyStackArray, byte[] _needleArray) {
+       for (int i = 0; i < _heyStackArray.length - _needleArray.length + 1; ++i) {
+           boolean found = true;
+           for (int j = 0; j < _needleArray.length; ++j) {
+               if (_heyStackArray[i + j] != _needleArray[j]) {
+                   found = false;
+                   break;
+               }
+           }
+           if (found) {
+               return i;
+           }
+       }
+       return -1;
+   }
+
 }
