@@ -8,6 +8,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -35,15 +37,15 @@ import java.util.stream.Collectors;
  * Therefore there is no need to put both driver in class path, because the driver is not picked from class path but from the given<br>
  * JAR files. <br>
  * So you can use the Update without messing up your class path with different H2 versions.
- * </p> 
- * 
+ * </p>
+ *
  * @author hypfvieh
  * @since 1.2.1 - 2023-11-16
  */
 public final class H2Updater {
 
     private final H2UpdaterBuilder bldr;
-    
+
     private H2Updater(H2UpdaterBuilder _bldr) {
         bldr = _bldr;
     }
@@ -52,37 +54,37 @@ public final class H2Updater {
      * Convert the configured databases using the given credentials.
      * @param _dbUsername username
      * @param _dbPassword password
-     * 
-     * @throws H2UpdaterException when converting fails 
+     *
+     * @throws H2UpdaterException when converting fails
      */
     public void convert(String _dbUsername, String _dbPassword) throws H2UpdaterException {
 
-        String dbUser = Optional.ofNullable(_dbUsername).map(String::trim).filter(s -> !s.isEmpty()).orElse(null); 
+        String dbUser = Optional.ofNullable(_dbUsername).map(String::trim).filter(s -> !s.isEmpty()).orElse(null);
         String dbPass = Optional.ofNullable(_dbPassword).map(String::trim).filter(s -> !s.isEmpty()).orElse(null);
 
         String exportPw = StringUtil.randomString(32);
         File dumpFile = exportDatabase(dbUser, dbPass, exportPw);
         importDatabase(dbUser, dbPass, exportPw, dumpFile);
     }
-    
+
     private void importDatabase(String _dbUsername, String _dbPassword, String _exportPw, File _dumpFile) throws H2UpdaterException {
         try {
             Class<?> importH2Driver = Class.forName("org.h2.Driver", true, bldr.getOutputH2Classloader());
             String importQry = "RUNSCRIPT FROM '" + _dumpFile.getAbsolutePath() + "' COMPRESSION LZF CIPHER AES PASSWORD '"  + _exportPw + "'";
-            
+
             if (bldr.importExportCharset != null) {
                 importQry += " CHARSET '" + bldr.importExportCharset + "'";
             }
-            
+
             if (!bldr.importOptions.isEmpty()) {
                 importQry += " " + bldr.importOptions.stream().map(Objects::toString).collect(Collectors.joining(" "));
             }
-            
+
             String dbUrl = String.format("jdbc:h2:%s", bldr.getOutputFileName());
-            
+
             try (Connection importConnection = createConnection(importH2Driver, dbUrl, _dbUsername, _dbPassword);
                 Statement importStatement = importConnection.createStatement()) {
-                
+
                 importStatement.execute(importQry);
             }
         } catch (Exception _ex) {
@@ -95,22 +97,26 @@ public final class H2Updater {
         if (!bldr.exportOptions.isEmpty()) {
             exportQry += " " + bldr.exportOptions.stream().map(Objects::toString).collect(Collectors.joining(" "));
         }
-        
+
         try {
             File createTempFile = File.createTempFile(getClass().getSimpleName(), "export.sql");
-            
-            exportQry += " TO '" + createTempFile.getAbsolutePath() + "'" 
+
+            exportQry += " TO '" + createTempFile.getAbsolutePath() + "'"
                 + "COMPRESSION LZF CIPHER AES PASSWORD '"  + _exportPw + "'";
-            
+
             if (bldr.importExportCharset != null) {
                 exportQry += " CHARSET '" + bldr.importExportCharset + "'";
             }
 
             Class<?> h2Driver = Class.forName("org.h2.Driver", true, bldr.getInputH2ClassLoader());
 
-            try (Connection exportConnection = createConnection(h2Driver, bldr.getInputJdbcUrl(), _dbUsername, _dbPassword);
+            // create a copy of the source file so H2 will not alter it
+            File tempFile = File.createTempFile("h2updater", ".mv.db");
+            Files.copy(bldr.getInputFile().toPath(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+            try (Connection exportConnection = createConnection(h2Driver, createDbUrl(tempFile), _dbUsername, _dbPassword);
                 Statement exportStatement = exportConnection.createStatement()) {
-                
+
                 exportStatement.execute(exportQry);
             }
             return createTempFile;
@@ -118,16 +124,27 @@ public final class H2Updater {
             throw new H2UpdaterException("Unable to export old database", _ex);
         }
     }
-    
+
+    private String createDbUrl(File _dbFile) {
+        String url = "jdbc:h2:" + _dbFile.getAbsolutePath().replaceFirst("\\.mv\\.db$", "");
+        if (!bldr.getH2OpenOptions().isEmpty()) {
+            url += ";" + bldr.h2OpenOptions.entrySet().stream()
+                .filter(e -> !e.getKey().equals("ACCESS_MODE_DATA"))
+                .filter(e -> !e.getKey().equals("AUTO_SERVER"))
+                .map(e -> e.getKey() + "=" + e.getValue()).collect(Collectors.joining(";"));
+        }
+        return url;
+    }
+
     /**
      * Creates a connection to the H2 database using reflection (without using DriverManager).
-     * 
+     *
      * @param _h2Driver h2 driver class
      * @param _url URL to connect to
      * @param _user database user
      * @param _password database user password
      * @return Connection
-     * 
+     *
      * @throws InstantiationException on reflection problems
      * @throws IllegalAccessException on reflection problems
      * @throws IllegalArgumentException on reflection problems
@@ -151,7 +168,8 @@ public final class H2Updater {
         }
         throw new RuntimeException("Given driver " + _h2Driver + " is not a java.sql.Driver");
     }
- 
+
+
     /**
      * Builder to create H2Updater instances.
      */
@@ -159,14 +177,16 @@ public final class H2Updater {
         private ClassLoader inputH2ClassLoader;
         private ClassLoader outputH2Classloader;
 
-        private String inputJdbcUrl;
+        private File inputFile;
         private String outputFileName;
 
         private String importExportCharset;
-        
+
+        private Map<String, String> h2OpenOptions = new LinkedHashMap<>();
+
         private final Set<ExportOption> exportOptions = new LinkedHashSet<>();
         private final Set<ImportOption> importOptions = new LinkedHashSet<>();
-        
+
         private H2UpdaterBuilder(ClassLoader _inputClzLdr, ClassLoader _outputClzLdr) {
             inputH2ClassLoader = _inputClzLdr;
             outputH2Classloader = _outputClzLdr;
@@ -180,63 +200,86 @@ public final class H2Updater {
             return outputH2Classloader;
         }
 
-        String getInputJdbcUrl() {
-            return inputJdbcUrl;
-        }
-
         String getOutputFileName() {
             return outputFileName;
         }
 
+        File getInputFile() {
+            return inputFile;
+        }
+
+        Map<String, String> getH2OpenOptions() {
+            return h2OpenOptions;
+        }
+
         /**
-         * Setup the input URL to the database file which should be converted.
-         * 
-         * @param _url url to database
-         * 
+         * Setup additional options used when building the connection URL for reading input database.<br>
+         * <p>
+         * If <code>null</code> is given, currently configured opening options are removed.
+         * </p>
+         *
+         * @param _options options to add
          * @return this
-         * 
-         * @throws H2UpdaterException when input URL is invalid 
+         *
          */
-        public H2UpdaterBuilder withInputJdbcUrl(String _url) throws H2UpdaterException {
-            if (_url == null || !_url.startsWith("jdbc:h2:")) {
-                throw new H2UpdaterException("Invalid input jdbc url '" + _url + "'. Url has to start with jdbc:h2:");
+        public H2UpdaterBuilder withH2OpenOptions(Map<String, String> _options) {
+            if (_options == null) {
+                h2OpenOptions.clear();
+                return this;
             }
-            inputJdbcUrl = _url;
-            
+
+            h2OpenOptions.putAll(_options);
+
+            return this;
+        }
+
+        /**
+         * Setup H2 database to convert.
+         *
+         * @param _h2InputFile database file
+         * @return this
+         *
+         * @throws H2UpdaterException
+         */
+        public H2UpdaterBuilder withInputFile(File _h2InputFile) throws H2UpdaterException {
+            if (_h2InputFile == null || !_h2InputFile.exists()) {
+                throw new H2UpdaterException("Database file cannot be null and must exist");
+            }
+            inputFile = _h2InputFile;
             return this;
         }
 
         /**
          * Setup the output database file name.<br>
          * This must be different to the input file name and the file must not exist.<br>
-         * The file extension (usually .mv.db) must be omitted (will be appended by H2 automatically).<br>
-         * 
+         * The file extension (usually .mv.db) should be omitted (will be appended by H2 automatically).<br>
+         *
          * @param _outputFileName name and path of new (converted) database
-         * 
+         *
          * @return this
-         * 
-         * @throws H2UpdaterException when outputFileName is invalid 
+         *
+         * @throws H2UpdaterException when outputFileName is invalid
          */
         public H2UpdaterBuilder withOutputFileName(String _outputFileName) throws H2UpdaterException {
             if (_outputFileName == null || _outputFileName.isBlank()) {
                 throw new H2UpdaterException("Output database file name cannot be null or blank");
             }
-            
+
             File checkFile = new File(_outputFileName.endsWith(".mv.db") ? _outputFileName : _outputFileName + ".mv.db");
             if (checkFile.exists()) {
                 throw new H2UpdaterException("Output database must not exist");
             }
-            
-            outputFileName = _outputFileName;
-            
+
+            outputFileName = checkFile.getAbsolutePath().replaceFirst("\\.mv\\.db$", "");
+
             return this;
         }
-        
+
         /**
          * Setup the charset to use for export and importing the database.
-         * 
-         * @param _charset charset to use, null to use default 
-         * 
+         *
+         * @param _charset charset to use, null to use default
+         *
          * @return this
          */
         public H2UpdaterBuilder withImportExportCharset(Charset _charset) {
@@ -247,124 +290,124 @@ public final class H2Updater {
             }
             return this;
         }
-        
+
         /**
          * Configure various options used for exporting the original database.
-         * 
+         *
          * @param _opt option
-         * 
+         *
          * @return this
-         * 
+         *
          * @throws H2UpdaterException when invalid combinations are used
          */
         public H2UpdaterBuilder addExportOption(ExportOption _opt) throws H2UpdaterException {
             if (_opt == null) {
                 return this;
             }
-            
+
             if (_opt == ExportOption.NODATA && exportOptions.contains(ExportOption.SIMPLE) || exportOptions.contains(ExportOption.COLUMNS)) {
                 throw new H2UpdaterException("NODATA option cannot be used in combination with SIMPLE or COLUMNS option");
             }
             if (_opt == ExportOption.SIMPLE || _opt == ExportOption.COLUMNS && exportOptions.contains(ExportOption.NODATA)) {
                 throw new H2UpdaterException("SIMPLE or COLUMNS option cannot be used in combination NODATA option");
             }
-            
+
             exportOptions.add(_opt);
-            
+
             return this;
         }
 
         /**
          * Remove a previously set {@link ExportOption}.
-         * 
+         *
          * @param _opt option to remove
-         * 
+         *
          * @return this
          */
         public H2UpdaterBuilder addRemoveExportOption(ExportOption _opt) {
             exportOptions.remove(_opt);
             return this;
         }
-        
+
         /**
          * Configure various options used for importing the original database to the new database.
-         * 
+         *
          * @param _opt option
-         * 
+         *
          * @return this
-         * 
+         *
          * @throws H2UpdaterException when invalid combinations are used
          */
         public H2UpdaterBuilder addImportOption(ImportOption _opt) throws H2UpdaterException {
             if (_opt == null) {
                 return this;
             }
-            
+
             if (_opt == ImportOption.FROM_1X && importOptions.contains(ImportOption.QUIRKS_MODE) || importOptions.contains(ImportOption.VARIABLE_BINARY)) {
                 throw new H2UpdaterException("FROM_1X option cannot be used in combination with QUIRKS_MODE or VARIABLE_BINARY option");
             }
             if (_opt == ImportOption.QUIRKS_MODE || _opt == ImportOption.VARIABLE_BINARY && importOptions.contains(ImportOption.FROM_1X)) {
                 throw new H2UpdaterException("QUIRKS_MODE or VARIABLE_BINARY option cannot be used in combination FROM_1X option");
             }
-            
+
             importOptions.add(_opt);
-            
+
             return this;
         }
 
         /**
          * Remove a previously set {@link ImportOption}.
-         * 
+         *
          * @param _opt option to remove
-         * 
+         *
          * @return this
          */
         public H2UpdaterBuilder addRemoveImportOption(ImportOption _opt) {
             importOptions.remove(_opt);
             return this;
         }
-        
+
         /**
          * Creates a new H2Updater ensuring all required properties are set.
-         * 
+         *
          * @return H2Updater
-         * 
-         * @throws H2UpdaterException when configuration is invalid or incomplete 
+         *
+         * @throws H2UpdaterException when configuration is invalid or incomplete
          */
         public H2Updater build() throws H2UpdaterException {
-            if (inputJdbcUrl == null) {
-                throw new H2UpdaterException("Setup inputJdbUrl using withInputJdbcUrl() first");
+            if (inputFile == null) {
+                throw new H2UpdaterException("Setup inputFile using withInputFile() first");
             }
             if (outputFileName == null) {
                 throw new H2UpdaterException("Setup outputFileName using withOutputFileName() first");
             }
-            
+
             return new H2Updater(this);
         }
-        
+
         /**
          * Create a new builder instance to configure H2Updater.
-         * 
+         *
          * @param _inputH2Jar jar file of H2 to read database to convert
          * @param _outputH2Jar jar file of H2 to write converted database with
-         * 
+         *
          * @return this
-         * 
-         * @throws H2UpdaterException when loading jars failed 
+         *
+         * @throws H2UpdaterException when loading jars failed
          */
         public static H2UpdaterBuilder create(File _inputH2Jar, File _outputH2Jar) throws H2UpdaterException {
             return new H2UpdaterBuilder(loadJar(_inputH2Jar), loadJar(_outputH2Jar));
         }
-        
+
         /**
          * Setup a custom classloader for the given jar file.
          * Used to support loading of the same classes from different versions of H2.
-         *  
+         *
          * @param _h2Jar jar of h2 to load
-         * 
+         *
          * @return ClassLoader instance
-         * 
-         * @throws H2UpdaterException jar file cannot be loaded 
+         *
+         * @throws H2UpdaterException jar file cannot be loaded
          */
         private static ClassLoader loadJar(File _h2Jar) throws H2UpdaterException {
             if (_h2Jar == null || !_h2Jar.exists() || !_h2Jar.canRead()) {
@@ -377,7 +420,7 @@ public final class H2Updater {
             }
         }
     }
-    
+
     /**
      * Options to configure export of original database.
      */
@@ -395,16 +438,16 @@ public final class H2Updater {
         /** Create DROP statement for every table before default CREATE statement. */
         DROP
     }
-    
+
     public static enum ImportOption {
-        /** 
-         * Various compatibility quirks for scripts from older versions of H2. 
+        /**
+         * Various compatibility quirks for scripts from older versions of H2.
          * Use this option when importing scripts that were generated by H2 1.4.200 or older.
          */
         QUIRKS_MODE,
         /**
-         * BINARY data type will be parsed as VARBINARY. 
-         * Use this when importing scripts that were generated by H2 1.4.200 or older. 
+         * BINARY data type will be parsed as VARBINARY.
+         * Use this when importing scripts that were generated by H2 1.4.200 or older.
          */
         VARIABLE_BINARY,
         /**
@@ -412,7 +455,7 @@ public final class H2Updater {
          */
         FROM_1X;
     }
-    
+
     /**
      * Exception which will be thrown if something went wrong.
      */
@@ -426,6 +469,7 @@ public final class H2Updater {
         public H2UpdaterException(String _message) {
             super(_message);
         }
-        
+
     }
+
 }
