@@ -14,8 +14,9 @@ import java.util.Objects;
  * @since 1.2.1 - 2024-03-21
  */
 public class H2Util {
-    private static final byte[] MAGIC_BUILD_NUMBER = new byte[] {0x54, 0x20, 0x43, 0x52, 0x45, 0x41, 0x54, 0x45, 0x5f, 0x42, 0x55, 0x49, 0x4c, 0x44};
-    private static final byte[] MAGIC_FORMAT = new byte[] {0x2c, 0x66, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x3a};
+    private static final byte[] MAGIC_XSET = new byte[] {0x26, 0x58, 0x53, 0x45, 0x54}; // "&XSET"
+    private static final byte[] MAGIC_BUILD_NUMBER = new byte[] {0x20, 0x43, 0x52, 0x45, 0x41, 0x54, 0x45, 0x5f, 0x42, 0x55, 0x49, 0x4c, 0x44, 0x20}; // " CREATE_BUILD "
+    private static final byte[] MAGIC_FORMAT = new byte[] {0x2c, 0x66, 0x6f, 0x72, 0x6d, 0x61, 0x74, 0x3a}; // "FORMAT:"
 
     /**
      * Reads the given stream and tries to extract the version information.<br>
@@ -36,15 +37,16 @@ public class H2Util {
         String formatNumber = null;
 
         try (var fis = _input) {
-            long readBytes = 0;
-            int read = 0;
             int pos = -1;
-            while ((read = fis.read(buf)) > 0) {
-                readBytes += read;
-                if (buildNumber == null) {
+            boolean foundXset = false;
+            while ((fis.read(buf)) > 0) {
+                if (!foundXset) {
+                    foundXset = TypeUtil.indexOfByteArray(buf, MAGIC_XSET) > -1;
+                }
+                if (buildNumber == null && foundXset) {
                     pos = TypeUtil.indexOfByteArray(buf, MAGIC_BUILD_NUMBER);
                     if (pos > -1) {
-                        int searchPos = pos + MAGIC_BUILD_NUMBER.length + 1;
+                        int searchPos = pos + MAGIC_BUILD_NUMBER.length;
                         buildNumber = new String(Arrays.copyOfRange(buf, searchPos, searchPos + 3));
                     }
                 }
@@ -61,11 +63,6 @@ public class H2Util {
                     break;
                 }
 
-                if (readBytes >= 16384) {
-                    // stop reading after 16384 bytes
-                    // header information should be found before that or we are unable to determine
-                    break;
-                }
             }
         }
 
@@ -73,7 +70,7 @@ public class H2Util {
             return null;
         }
 
-        return new H2VersionInfo(Integer.parseInt(buildNumber), Integer.parseInt(formatNumber));
+        return new H2VersionInfo(Integer.valueOf(buildNumber), Integer.valueOf(formatNumber));
     }
 
     /**
@@ -83,7 +80,7 @@ public class H2Util {
         private final int build;
         private final int format;
 
-        public H2VersionInfo(int _build, int _format) {
+        public H2VersionInfo(Integer _build, Integer _format) {
             build = _build;
             format = _format;
         }
