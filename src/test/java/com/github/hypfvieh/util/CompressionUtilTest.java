@@ -24,6 +24,7 @@ public class CompressionUtilTest extends AbstractBaseUtilTest {
         assertContains(content, "compressed by a unit test");
 
         extractedGzip.delete(); // remove no longer needed file
+        compressedGzip.delete();
     }
 
 
