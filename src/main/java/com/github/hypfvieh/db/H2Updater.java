@@ -1,6 +1,7 @@
 package com.github.hypfvieh.db;
 
 import com.github.hypfvieh.util.StringUtil;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -80,7 +81,7 @@ public final class H2Updater {
                 importQry += " " + bldr.importOptions.stream().map(Objects::toString).collect(Collectors.joining(" "));
             }
 
-            String dbUrl = String.format("jdbc:h2:%s", bldr.getOutputFileName());
+            String dbUrl = createDbUrl(bldr.outputFileName);
 
             try (Connection importConnection = createConnection(importH2Driver, dbUrl, _dbUsername, _dbPassword);
                 Statement importStatement = importConnection.createStatement()) {
@@ -114,7 +115,7 @@ public final class H2Updater {
             File tempFile = File.createTempFile("h2updater", ".mv.db");
             Files.copy(bldr.getInputFile().toPath(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-            try (Connection exportConnection = createConnection(h2Driver, createDbUrl(tempFile), _dbUsername, _dbPassword);
+            try (Connection exportConnection = createConnection(h2Driver, createDbUrl(tempFile.getAbsolutePath()), _dbUsername, _dbPassword);
                 Statement exportStatement = exportConnection.createStatement()) {
 
                 exportStatement.execute(exportQry);
@@ -125,8 +126,8 @@ public final class H2Updater {
         }
     }
 
-    private String createDbUrl(File _dbFile) {
-        String url = "jdbc:h2:" + _dbFile.getAbsolutePath().replaceFirst("\\.mv\\.db$", "");
+    private String createDbUrl(String _dbFile) {
+        String url = "jdbc:h2:" + _dbFile.replaceFirst("\\.mv\\.db$", "");
         if (!bldr.getH2OpenOptions().isEmpty()) {
             url += ";" + bldr.h2OpenOptions.entrySet().stream()
                 .filter(e -> !e.getKey().equals("ACCESS_MODE_DATA"))
@@ -157,6 +158,10 @@ public final class H2Updater {
     private static Connection createConnection(Class<?> _h2Driver, String _url, String _user, String _password) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, SQLException {
         if (java.sql.Driver.class.isAssignableFrom(_h2Driver)) {
             Driver driverInstance = (Driver) _h2Driver.getDeclaredConstructor().newInstance();
+
+            LoggerFactory.getLogger(H2Updater.class).debug("Loaded class {} with version info {}.{}",
+                _h2Driver, driverInstance.getMajorVersion(), driverInstance.getMinorVersion());
+
             Properties prop = new Properties();
             if (_user != null) {
                 prop.setProperty("user", _user);
@@ -414,7 +419,7 @@ public final class H2Updater {
                 throw new H2UpdaterException("Given H2 jar " + _h2Jar + " does not exist or cannot be read");
             }
             try {
-                return new URLClassLoader(new URL[] { _h2Jar.toURI().toURL() });
+                return new URLClassLoader(new URL[] { _h2Jar.toURI().toURL() }, ClassLoader.getPlatformClassLoader());
             } catch (MalformedURLException _ex) {
                 throw new H2UpdaterException("Unable to convert file path to URL", _ex);
             }
