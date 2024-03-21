@@ -1,6 +1,7 @@
 package com.github.hypfvieh.db;
 
 import com.github.hypfvieh.util.StringUtil;
+import com.github.hypfvieh.util.SystemUtil;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -46,9 +47,19 @@ import java.util.stream.Collectors;
 public final class H2Updater {
 
     private final H2UpdaterBuilder bldr;
+    private final File baseTempDir;
+
+    private final List<File> tempFiles = new ArrayList<>();
 
     private H2Updater(H2UpdaterBuilder _bldr) {
         bldr = _bldr;
+        baseTempDir = new File(SystemUtil.getTempDir(), getClass().getSimpleName());
+        if (!baseTempDir.exists()) {
+            if (!baseTempDir.mkdirs()) {
+                throw new RuntimeException("Cannot create temp output directory");
+            }
+            baseTempDir.deleteOnExit();
+        }
     }
 
     /**
@@ -64,8 +75,14 @@ public final class H2Updater {
         String dbPass = Optional.ofNullable(_dbPassword).map(String::trim).filter(s -> !s.isEmpty()).orElse(null);
 
         String exportPw = StringUtil.randomString(32);
-        File dumpFile = exportDatabase(dbUser, dbPass, exportPw);
-        importDatabase(dbUser, dbPass, exportPw, dumpFile);
+
+        try {
+            File dumpFile = exportDatabase(dbUser, dbPass, exportPw);
+            importDatabase(dbUser, dbPass, exportPw, dumpFile);
+        } catch (H2UpdaterException _ex) {
+            cleanupTemp();
+            throw _ex;
+        }
     }
 
     private void importDatabase(String _dbUsername, String _dbPassword, String _exportPw, File _dumpFile) throws H2UpdaterException {
@@ -100,9 +117,9 @@ public final class H2Updater {
         }
 
         try {
-            File createTempFile = File.createTempFile(getClass().getSimpleName(), "export.sql");
+            File exportTmpFile = createTempFile(getClass().getSimpleName(), "export.sql");
 
-            exportQry += " TO '" + createTempFile.getAbsolutePath() + "'"
+            exportQry += " TO '" + exportTmpFile.getAbsolutePath() + "'"
                 + "COMPRESSION LZF CIPHER AES PASSWORD '"  + _exportPw + "'";
 
             if (bldr.importExportCharset != null) {
@@ -112,7 +129,7 @@ public final class H2Updater {
             Class<?> h2Driver = Class.forName("org.h2.Driver", true, bldr.getInputH2ClassLoader());
 
             // create a copy of the source file so H2 will not alter it
-            File tempFile = File.createTempFile("h2updater", ".mv.db");
+            File tempFile = createTempFile(getClass().getSimpleName() + "-tmpdb", ".mv.db");
             Files.copy(bldr.getInputFile().toPath(), tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
             try (Connection exportConnection = createConnection(h2Driver, createDbUrl(tempFile.getAbsolutePath()), _dbUsername, _dbPassword);
@@ -120,13 +137,43 @@ public final class H2Updater {
 
                 exportStatement.execute(exportQry);
             }
-            return createTempFile;
+            return exportTmpFile;
         } catch (Exception _ex) {
             throw new H2UpdaterException("Unable to export old database", _ex);
         }
     }
 
+    /**
+     * Create a temp file in our own working directory.
+     *
+     * @param _prefix file prefix (first part of file name)
+     * @param _suffix file suffix (end part of file name)
+     *
+     * @return File
+     */
+    private File createTempFile(String _prefix, String _suffix) {
+        long nano = System.nanoTime();
+        if (nano <= 0L) {
+            Random random = new Random();
+            nano = System.currentTimeMillis() + random.nextInt();
+        }
+        File file = new File(baseTempDir, _prefix + "_" + nano + _suffix);
+        file.deleteOnExit();
+        tempFiles.add(file);
+        return file;
+    }
+
+    /**
+     * Create a H2 JDBC url using given file.
+     *
+     * @param _dbFile file
+     * @return String
+     */
     private String createDbUrl(String _dbFile) {
+        if (_dbFile == null) {
+            return null;
+        }
+
         String url = "jdbc:h2:" + _dbFile.replaceFirst("\\.mv\\.db$", "");
         if (!bldr.getH2OpenOptions().isEmpty()) {
             url += ";" + bldr.h2OpenOptions.entrySet().stream()
@@ -172,6 +219,25 @@ public final class H2Updater {
             return driverInstance.connect(_url, prop);
         }
         throw new RuntimeException("Given driver " + _h2Driver + " is not a java.sql.Driver");
+    }
+
+
+    /**
+     * Cleanup all created temp files.
+     */
+    private void cleanupTemp() {
+        Collections.sort(tempFiles);
+        tempFiles.removeIf(f -> {
+            if (f.isDirectory()) {
+                return false;
+            }
+            return f.delete();
+        });
+
+        for (File file : tempFiles) {
+            file.delete();
+        }
+        tempFiles.clear();
     }
 
 
