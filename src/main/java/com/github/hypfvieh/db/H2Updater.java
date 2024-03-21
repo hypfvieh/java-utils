@@ -80,8 +80,9 @@ public final class H2Updater {
             File dumpFile = exportDatabase(dbUser, dbPass, exportPw);
             importDatabase(dbUser, dbPass, exportPw, dumpFile);
         } catch (H2UpdaterException _ex) {
-            cleanupTemp();
             throw _ex;
+        } finally {
+            cleanupTemp();
         }
     }
 
