@@ -4,6 +4,7 @@ import com.github.hypfvieh.util.TypeUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -41,13 +42,12 @@ public class H2Util {
             boolean foundXset = false;
             while ((fis.read(buf)) > 0) {
                 if (!foundXset) {
-                    foundXset = TypeUtil.indexOfByteArray(buf, MAGIC_XSET) > -1;
+                    foundXset = byteScan(buf, MAGIC_XSET) > -1;
                 }
                 if (buildNumber == null && foundXset) {
-                    pos = TypeUtil.indexOfByteArray(buf, MAGIC_BUILD_NUMBER);
+                    pos = byteScan(buf, MAGIC_BUILD_NUMBER);
                     if (pos > -1) {
-                        int searchPos = pos + MAGIC_BUILD_NUMBER.length;
-                        buildNumber = new String(Arrays.copyOfRange(buf, searchPos, searchPos + 3));
+                        buildNumber = findNumbers(buf, pos, 3);
                     }
                 }
 
@@ -71,6 +71,85 @@ public class H2Util {
         }
 
         return new H2VersionInfo(Integer.valueOf(buildNumber), Integer.valueOf(formatNumber));
+    }
+
+    /**
+     * Look for ASCII numbers in the given byte array.
+     *
+     * @param _buf byte array to read
+     * @param _offset offset to start reading at
+     * @param _amountOfNumbers amount of numbers to find
+     * @return String or null if no numbers found
+     */
+    static String findNumbers(byte[] _buf, int _offset, int _amountOfNumbers) {
+        if (_buf.length < _offset || _buf.length < _amountOfNumbers) {
+            return null;
+        }
+
+        ByteBuffer bucket = ByteBuffer.allocate(_amountOfNumbers);
+        int bytesRead = 0;
+        for (int i = _offset; i < _buf.length; i++) {
+
+            // ignore everything non numeric
+            if (_buf[i] >= 48 && _buf[i] <= 57) {
+                bucket.put(_buf[i]);
+                bytesRead++;
+            }
+
+            // read until we have desired amount of numbers found
+            if (bytesRead < _amountOfNumbers) {
+                continue;
+            }
+
+            return new String(bucket.array());
+
+        }
+        return null;
+    }
+
+    /**
+     * Look for needle in heystack assuming needle contains ASCII only.
+     * Uses a sliding window to find needle in case text in heystack is polluted by non-ASCII bytes.
+     *
+     * @param _heystack heystack to search
+     * @param _needle needle to find in heystack
+     *
+     * @return position of needle in heystack, -1 if not found
+     */
+    static int byteScan(byte[] _heystack, byte[] _needle) {
+        ByteBuffer bucket = ByteBuffer.allocate(_needle.length);
+        boolean foundFirst = false;
+        int bytesRead = 0;
+        for (int i = 0; i < _heystack.length; i++) {
+            // skip everything until we find at least the first byte
+            if (!foundFirst && _heystack[i] == _needle[0]) {
+                foundFirst = true;
+            }
+
+            // ignore everything non-ascii
+            if (foundFirst && _heystack[i] >= 32 && _heystack[i] <= 126) {
+                bucket.put(_heystack[i]);
+                bytesRead++;
+            }
+
+            // read at least as many bytes as we need for our needle to be found
+            if (bytesRead < _needle.length) {
+                continue;
+            }
+
+            if (TypeUtil.indexOfByteArray(bucket.array(), _needle) > -1) {
+                return i;
+            } else {
+                // no match yet, drop first byte so we have a sliding-window to find needle
+                byte[] current = new byte[bucket.array().length -1];
+                System.arraycopy(bucket.array(), 1, current, 0, bucket.array().length -1);
+                bucket.rewind();
+                bucket.put(current);
+                bytesRead = bucket.array().length -1;
+            }
+
+        }
+        return -1;
     }
 
     /**
