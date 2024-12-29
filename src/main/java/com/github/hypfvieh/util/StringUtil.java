@@ -844,4 +844,23 @@ public final class StringUtil {
         return requireNonEmpty(_str, "String may not be empty");
     }
 
+    /**
+     * Count the number of instances of substring within a string.
+     *
+     * @param string String to look for substring in.
+     * @param substring Sub-string to look for.
+     * @return Count of substrings in string.
+     */
+    public static int countSubString(String string, String substring) {
+        int count = 0;
+        int idx = 0;
+
+        while ((idx = string.indexOf(substring, idx)) != -1) {
+            idx++;
+            count++;
+        }
+
+        return count;
+    }
+
 }
