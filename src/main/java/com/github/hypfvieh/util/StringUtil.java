@@ -320,6 +320,16 @@ public final class StringUtil {
     }
 
     /**
+     * Checks if the given String is NOT blank.
+     *
+     * @param _str string to check
+     * @return true if string is not blank, false otherwise
+     */
+    public static boolean isNotBlank(CharSequence _str) {
+        return !isBlank(_str);
+    }
+
+    /**
      * Checks if the given String is either null or empty.
      * Blank means:<br>
      * <pre>
