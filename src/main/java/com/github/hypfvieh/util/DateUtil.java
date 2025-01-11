@@ -48,6 +48,26 @@ public final class DateUtil {
     }
 
     /**
+     * Null-safe equal comparison of two LocalDate objects.
+     *
+     * @param _first first date
+     * @param _second second date
+     * @return true if equal
+     */
+    public static boolean isEqual(LocalDate _first, LocalDate _second) {
+        if (_first == _second) {
+            return true;
+        }
+
+        if (_first == null || _second == null) {
+            return false;
+        }
+
+        return _first.equals(_second);
+    }
+
+
+    /**
      * Checks if the first timestamp is before or equal to the second timestamp.
      *
      * @param _first first timestamp
@@ -81,6 +101,26 @@ public final class DateUtil {
     }
 
     /**
+     * Null-safe equal comparison of two LocalDateTime objects.
+     *
+     * @param _first first datetime
+     * @param _second second datetime
+     * @return true if equal
+     */
+    public static boolean isEqual(LocalDateTime _first, LocalDateTime _second) {
+        if (_first == _second) {
+            return true;
+        }
+
+        if (_first == null || _second == null) {
+            return false;
+        }
+
+        return _first.equals(_second);
+    }
+
+
+    /**
      * Checks if the first time is before or equal to the second time.
      *
      * @param _first first time
@@ -111,6 +151,25 @@ public final class DateUtil {
         }
 
         return _first.equals(_second) || _first.isAfter(_second);
+    }
+
+    /**
+     * Null-safe equal comparison of two LocalTime objects.
+     *
+     * @param _first first time
+     * @param _second second time
+     * @return true if equal
+     */
+    public static boolean isEqual(LocalTime _first, LocalTime _second) {
+        if (_first == _second) {
+            return true;
+        }
+
+        if (_first == null || _second == null) {
+            return false;
+        }
+
+        return _first.equals(_second);
     }
 
     /**
