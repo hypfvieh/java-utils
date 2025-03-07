@@ -107,6 +107,18 @@ public final class NumberUtil {
     }
 
     /**
+     * Checks if the given BigDecimal is zero.
+     * This comparison ignores the scale of the {@link BigDecimal}.
+     * Will return false if the input value is null.
+     *
+     * @param _val the value to check
+     * @return true if the value is zero, false otherwise
+     */
+    public static boolean isZero(BigDecimal _val) {
+        return isEqual(_val, BigDecimal.ZERO);
+    }
+
+    /**
      * Compares v1 vs. v2 and will return true if they are equal or v1 is bigger than v2.
      * <br>
      * This comparison ignores the scale of the {@link BigDecimal},
