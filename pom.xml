@@ -5,7 +5,7 @@
 
     <groupId>com.github.hypfvieh</groupId>
     <artifactId>java-utils</artifactId>
-    <version>1.2.1-SNAPSHOT</version>
+    <version>1.2.1</version>
     <packaging>jar</packaging>
 
     <url>https://github.com/hypfvieh/${project.artifactId}</url>
@@ -165,7 +165,7 @@
         <connection>scm:git:ssh://git@github.com/hypfvieh/java-utils.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/hypfvieh/java-utils.git</developerConnection>
         <url>ssh://git@github.com/hypfvieh/java-utils.git</url>
-      <tag>HEAD</tag>
+      <tag>java-utils-1.2.1</tag>
   </scm>
 
     <licenses>
