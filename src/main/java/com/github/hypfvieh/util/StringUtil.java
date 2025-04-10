@@ -384,6 +384,34 @@ public final class StringUtil {
     }
 
     /**
+     * Removes trailing and leading spaces / non-printable characters (char &lt;= 32) and returns null if remaining string would be empty.
+     *
+     * @param _str String to trim
+     * @return trimmed string or {@code null} if null input or trimmed string empty
+     */
+    public static String trimToNull(String _str) {
+        String val = trim(_str);
+        if (val == null || val.isEmpty()) {
+            return null;
+        }
+        return val;
+    }
+
+    /**
+     * Removes trailing and leading spaces / non-printable characters (char &lt;= 32) and returns an empty String if remaining string would be null.
+     *
+     * @param _str String to trim
+     * @return trimmed string or empty String
+     */
+    public static String trimToEmpty(String _str) {
+        String val = _str == null ? "" : trim(_str);
+        if (val == null || val.isEmpty()) {
+            return "";
+        }
+        return val;
+    }
+
+    /**
      * Combines the Strings in _string using _delimiter.
      * @param _delimiter delimiting string
      * @param _strings strings to join
@@ -871,6 +899,22 @@ public final class StringUtil {
         }
 
         return count;
+    }
+
+    public static String substringAfterLast(String _str, String _separator) {
+        if (isEmpty(_str)) {
+            return _str;
+        }
+
+        if (isEmpty(_separator)) {
+            return "";
+        }
+
+        int pos = _str.lastIndexOf(_separator);
+        if (pos == -1 || pos == _str.length() - _separator.length()) {
+            return "";
+        }
+        return _str.substring(pos + _separator.length());
     }
 
 }
