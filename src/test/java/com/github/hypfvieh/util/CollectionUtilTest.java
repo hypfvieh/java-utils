@@ -31,4 +31,12 @@ public class CollectionUtilTest extends AbstractBaseUtilTest {
         assertEquals(4, mutableIntList.size());
         assertEquals(List.of(1, 2, 3, 4), mutableIntList);
     }
+
+    @Test
+    void testGetFirstOrDefault() {
+        assertEquals(1, CollectionUtil.getFirstOrDefault(List.of(1, 2), null));
+        assertEquals("X", CollectionUtil.getFirstOrDefault(List.of(), "X"));
+        assertEquals(5, CollectionUtil.getFirstOrDefault(null, 5));
+        assertNull(CollectionUtil.getFirstOrDefault(List.of(), null));
+    }
 }

@@ -38,4 +38,19 @@ public final class CollectionUtil {
         return Arrays.stream(_items)
             .collect(Collectors.toList());
     }
+
+    /**
+     * Returns the first element in the collection or the default value if collection is {@code null} or empty.
+     * @param <T> type
+     * @param _items collection with elements
+     * @param _default default if collection is empty/{@code null}
+     * @return first element of collection or default
+     */
+    public static <T> T getFirstOrDefault(Collection<T> _items, T _default) {
+        if (_items == null || _items.isEmpty()) {
+            return _default;
+        }
+
+        return _items.iterator().next();
+    }
 }
